@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+:root {
+  --background: #F9FAFB;
+  --foreground: #1F2937;
+
+  /* Signal Colors */
+  --color-black: #1F2937;
+  --color-red: #EF4444;
+  --color-blue: #3B82F6;
+  --color-green: #10B981;
+
+  /* Status Background Colors */
+  --bg-black: #374151;
+  --bg-red: #FEE2E2;
+  --bg-blue: #DBEAFE;
+  --bg-green: #D1FAE5;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-noto-sans-kr), system-ui, sans-serif;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  min-height: 100dvh;
+}
+
+/* Status color utilities */
+.status-black {
+  background-color: var(--bg-black);
+  color: white;
+}
+
+.status-red {
+  background-color: var(--bg-red);
+  color: var(--color-red);
+}
+
+.status-blue {
+  background-color: var(--bg-blue);
+  color: var(--color-blue);
+}
+
+.status-green {
+  background-color: var(--bg-green);
+  color: var(--color-green);
+}
+
+/* Button tap effect */
+.tap-effect:active {
+  transform: scale(0.95);
+  transition: transform 0.1s ease;
+}
+
+/* Bingo cell animation */
+@keyframes pulse-green {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+}
+
+.animate-pulse-green {
+  animation: pulse-green 1s ease-in-out;
+}
