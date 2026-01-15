@@ -1,0 +1,65 @@
+ID,대단원번호,대단원명,유형순서,유형명,이미지파일,유튜브링크
+1-01,1,수와 연산,1,자연수의 혼합 계산,1-01.png,https://youtu.be/example1
+1-02,1,수와 연산,2,분수의 덧셈,1-02.png,https://youtu.be/example2
+1-03,1,수와 연산,3,분수의 뺄셈,1-03.png,https://youtu.be/example3
+1-04,1,수와 연산,4,분수의 곱셈,1-04.png,https://youtu.be/example4
+1-05,1,수와 연산,5,분수의 나눗셈,1-05.png,https://youtu.be/example5
+1-06,1,수와 연산,6,소수의 덧셈,1-06.png,https://youtu.be/example6
+1-07,1,수와 연산,7,소수의 뺄셈,1-07.png,https://youtu.be/example7
+1-08,1,수와 연산,8,소수의 곱셈,1-08.png,https://youtu.be/example8
+1-09,1,수와 연산,9,소수의 나눗셈,1-09.png,https://youtu.be/example9
+1-10,1,수와 연산,10,약수와 배수,1-10.png,https://youtu.be/example10
+1-11,1,수와 연산,11,최대공약수,1-11.png,https://youtu.be/example11
+1-12,1,수와 연산,12,최소공배수,1-12.png,https://youtu.be/example12
+1-13,1,수와 연산,13,정수의 이해,1-13.png,https://youtu.be/example13
+1-14,1,수와 연산,14,정수의 덧셈뺄셈,1-14.png,https://youtu.be/example14
+1-15,1,수와 연산,15,유리수의 이해,1-15.png,https://youtu.be/example15
+1-16,1,수와 연산,16,유리수의 계산,1-16.png,https://youtu.be/example16
+2-01,2,문자와 식,1,문자의 사용,2-01.png,https://youtu.be/example17
+2-02,2,문자와 식,2,식의 값,2-02.png,https://youtu.be/example18
+2-03,2,문자와 식,3,일차식의 덧셈,2-03.png,https://youtu.be/example19
+2-04,2,문자와 식,4,일차식의 뺄셈,2-04.png,https://youtu.be/example20
+2-05,2,문자와 식,5,등식의 성질,2-05.png,https://youtu.be/example21
+2-06,2,문자와 식,6,일차방정식 풀이,2-06.png,https://youtu.be/example22
+2-07,2,문자와 식,7,일차방정식 활용1,2-07.png,https://youtu.be/example23
+2-08,2,문자와 식,8,일차방정식 활용2,2-08.png,https://youtu.be/example24
+2-09,2,문자와 식,9,부등식의 이해,2-09.png,https://youtu.be/example25
+2-10,2,문자와 식,10,부등식의 성질,2-10.png,https://youtu.be/example26
+2-11,2,문자와 식,11,일차부등식 풀이,2-11.png,https://youtu.be/example27
+2-12,2,문자와 식,12,일차부등식 활용,2-12.png,https://youtu.be/example28
+2-13,2,문자와 식,13,연립방정식의 이해,2-13.png,https://youtu.be/example29
+2-14,2,문자와 식,14,연립방정식 풀이,2-14.png,https://youtu.be/example30
+2-15,2,문자와 식,15,연립방정식 활용1,2-15.png,https://youtu.be/example31
+2-16,2,문자와 식,16,연립방정식 활용2,2-16.png,https://youtu.be/example32
+3-01,3,함수,1,좌표평면의 이해,3-01.png,https://youtu.be/example33
+3-02,3,함수,2,정비례 관계,3-02.png,https://youtu.be/example34
+3-03,3,함수,3,반비례 관계,3-03.png,https://youtu.be/example35
+3-04,3,함수,4,함수의 개념,3-04.png,https://youtu.be/example36
+3-05,3,함수,5,함수값 구하기,3-05.png,https://youtu.be/example37
+3-06,3,함수,6,일차함수의 뜻,3-06.png,https://youtu.be/example38
+3-07,3,함수,7,일차함수 그래프,3-07.png,https://youtu.be/example39
+3-08,3,함수,8,기울기와 y절편,3-08.png,https://youtu.be/example40
+3-09,3,함수,9,일차함수 식 구하기,3-09.png,https://youtu.be/example41
+3-10,3,함수,10,일차함수 활용,3-10.png,https://youtu.be/example42
+3-11,3,함수,11,일차함수와 방정식,3-11.png,https://youtu.be/example43
+3-12,3,함수,12,두 직선의 위치관계,3-12.png,https://youtu.be/example44
+3-13,3,함수,13,연립방정식과 그래프,3-13.png,https://youtu.be/example45
+3-14,3,함수,14,이차함수의 뜻,3-14.png,https://youtu.be/example46
+3-15,3,함수,15,이차함수 그래프,3-15.png,https://youtu.be/example47
+3-16,3,함수,16,이차함수 활용,3-16.png,https://youtu.be/example48
+4-01,4,기하,1,점 직선 면,4-01.png,https://youtu.be/example49
+4-02,4,기하,2,각의 종류,4-02.png,https://youtu.be/example50
+4-03,4,기하,3,맞꼭지각,4-03.png,https://youtu.be/example51
+4-04,4,기하,4,평행선과 동위각,4-04.png,https://youtu.be/example52
+4-05,4,기하,5,삼각형의 성질,4-05.png,https://youtu.be/example53
+4-06,4,기하,6,삼각형의 합동,4-06.png,https://youtu.be/example54
+4-07,4,기하,7,이등변삼각형,4-07.png,https://youtu.be/example55
+4-08,4,기하,8,직각삼각형의 합동,4-08.png,https://youtu.be/example56
+4-09,4,기하,9,사각형의 성질,4-09.png,https://youtu.be/example57
+4-10,4,기하,10,평행사변형,4-10.png,https://youtu.be/example58
+4-11,4,기하,11,여러 가지 사각형,4-11.png,https://youtu.be/example59
+4-12,4,기하,12,닮음의 뜻,4-12.png,https://youtu.be/example60
+4-13,4,기하,13,닮음비와 넓이비,4-13.png,https://youtu.be/example61
+4-14,4,기하,14,피타고라스 정리,4-14.png,https://youtu.be/example62
+4-15,4,기하,15,원의 성질,4-15.png,https://youtu.be/example63
+4-16,4,기하,16,원의 넓이,4-16.png,https://youtu.be/example64
