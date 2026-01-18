@@ -3,9 +3,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { Circle, Book, ChevronLeft, User, Mail, Calendar, Phone, Pencil, MessageSquare, Youtube } from 'lucide-react';
+import { Circle, Book, ChevronLeft, User, Mail, Calendar, Phone, Pencil, MessageSquare, Youtube, LogOut } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { StatusColor, STATUS_CONFIG, Profile, CurriculumSet, CurriculumItem, CurriculumMemo } from '@/types/database';
+import { useAuth } from '@/components/AuthProvider';
 
 const StatusIcon = ({ status, size = 16 }: { status: StatusColor; size?: number }) => {
   const config = STATUS_CONFIG[status];
@@ -19,6 +20,7 @@ interface ProgressItem {
 }
 
 export default function StudentDetailPage() {
+  const { signOut } = useAuth();
   const params = useParams();
   const studentId = params.id as string;
 
@@ -268,17 +270,27 @@ export default function StudentDetailPage() {
       {/* Header */}
       <header className="bg-white shadow-sm sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="flex items-center gap-3">
-            <Link
-              href="/admin/students"
-              className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100"
-            >
-              <ChevronLeft size={24} className="text-gray-600" />
-            </Link>
-            <div>
-              <h1 className="text-lg sm:text-xl font-bold text-gray-800">{student.name}</h1>
-              <p className="text-xs sm:text-sm text-gray-500">학생 상세 정보</p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Link
+                href="/admin/students"
+                className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100"
+              >
+                <ChevronLeft size={24} className="text-gray-600" />
+              </Link>
+              <div>
+                <h1 className="text-lg sm:text-xl font-bold text-gray-800">{student.name}</h1>
+                <p className="text-xs sm:text-sm text-gray-500">학생 상세 정보</p>
+              </div>
             </div>
+            <button
+              onClick={signOut}
+              className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+              title="로그아웃"
+            >
+              <LogOut size={18} />
+              <span className="text-sm hidden sm:inline">로그아웃</span>
+            </button>
           </div>
         </div>
       </header>

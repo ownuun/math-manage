@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { ChevronDown, ChevronRight, Folder, FileText, Plus, Pencil, Trash2 } from 'lucide-react';
+import { ChevronDown, ChevronRight, Folder, FileText, Plus, Pencil, Trash2, LogOut } from 'lucide-react';
 import { CurriculumItem } from '@/types/database';
 import { useAdmin } from '@/hooks/useAdmin';
+import { useAuth } from '@/components/AuthProvider';
 import { buildTree, TreeNode } from '@/lib/sample-data';
 
 // 항목 추가/편집 모달
@@ -300,6 +301,7 @@ function TreeNodeComponent({
 }
 
 export default function CurriculumPage() {
+  const { signOut } = useAuth();
   const {
     curriculumSets,
     curriculumItems,
@@ -504,6 +506,14 @@ export default function CurriculumPage() {
               </Link>
               <h1 className="text-xl font-bold text-gray-800">커리큘럼 관리</h1>
             </div>
+            <button
+              onClick={signOut}
+              className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+              title="로그아웃"
+            >
+              <LogOut size={18} />
+              <span className="text-sm hidden sm:inline">로그아웃</span>
+            </button>
           </div>
 
           {/* 탭 네비게이션 */}
