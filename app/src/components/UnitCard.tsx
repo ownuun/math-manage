@@ -1,9 +1,9 @@
 'use client';
 
-import { Unit } from '@/types/database';
+import { UnitGroup } from '@/types/database';
 
 interface UnitCardProps {
-  unit: Unit;
+  unit: UnitGroup;
   onClick: () => void;
 }
 
@@ -17,8 +17,8 @@ export default function UnitCard({ unit, onClick }: UnitCardProps) {
       className="tap-effect w-full aspect-square rounded-2xl bg-white shadow-lg p-4 flex flex-col justify-between transition-transform hover:scale-[1.02] border border-gray-100"
     >
       <div className="text-left">
-        <span className="text-sm text-gray-500 font-medium">대단원 {unit.id}</span>
-        <h2 className="text-lg font-bold text-gray-800 mt-1">{unit.name}</h2>
+        <h2 className="text-lg font-bold text-gray-800">{unit.name}</h2>
+        <span className="text-sm text-gray-500">{unit.total}개 유형</span>
       </div>
 
       <div className="space-y-2">
@@ -35,7 +35,7 @@ export default function UnitCard({ unit, onClick }: UnitCardProps) {
         {/* Progress Text */}
         <div className="flex justify-between items-center">
           <span className="text-sm text-gray-600">
-            {unit.progress}/{unit.total} 완료
+            {unit.progress}/{unit.total} 마스터
           </span>
           {isComplete && (
             <span className="text-green-500 font-bold text-sm">ALL GREEN!</span>
