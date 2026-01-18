@@ -1,133 +1,292 @@
-import { Curriculum, UserProgress, StatusColor } from '@/types/database';
+import { CurriculumItem, CurriculumSet, CurriculumMemo, UserProgress, StatusColor, UnitGroup, Profile } from '@/types/database';
 
-export const SAMPLE_CURRICULUM: Curriculum[] = [
+// 샘플 커리큘럼 세트
+export const SAMPLE_CURRICULUM_SETS: CurriculumSet[] = [
+  { id: 'math-grade7', name: '중1 수학', created_at: '' },
+  { id: 'math-grade8', name: '중2 수학', created_at: '' },
+  { id: 'math-grade6', name: '초6 수학', created_at: '' },
+];
+
+// 샘플 커리큘럼 항목 (중1 수학)
+export const SAMPLE_CURRICULUM_ITEMS: CurriculumItem[] = [
   // 대단원 1: 수와 연산
-  { id: '1-01', unit_id: 1, unit_name: '수와 연산', type_name: '자연수의 혼합 계산', image_url: null, youtube_url: 'https://youtu.be/example1', order: 1, created_at: '' },
-  { id: '1-02', unit_id: 1, unit_name: '수와 연산', type_name: '분수의 덧셈', image_url: null, youtube_url: 'https://youtu.be/example2', order: 2, created_at: '' },
-  { id: '1-03', unit_id: 1, unit_name: '수와 연산', type_name: '분수의 뺄셈', image_url: null, youtube_url: 'https://youtu.be/example3', order: 3, created_at: '' },
-  { id: '1-04', unit_id: 1, unit_name: '수와 연산', type_name: '분수의 곱셈', image_url: null, youtube_url: 'https://youtu.be/example4', order: 4, created_at: '' },
-  { id: '1-05', unit_id: 1, unit_name: '수와 연산', type_name: '분수의 나눗셈', image_url: null, youtube_url: 'https://youtu.be/example5', order: 5, created_at: '' },
-  { id: '1-06', unit_id: 1, unit_name: '수와 연산', type_name: '소수의 덧셈', image_url: null, youtube_url: 'https://youtu.be/example6', order: 6, created_at: '' },
-  { id: '1-07', unit_id: 1, unit_name: '수와 연산', type_name: '소수의 뺄셈', image_url: null, youtube_url: 'https://youtu.be/example7', order: 7, created_at: '' },
-  { id: '1-08', unit_id: 1, unit_name: '수와 연산', type_name: '소수의 곱셈', image_url: null, youtube_url: 'https://youtu.be/example8', order: 8, created_at: '' },
-  { id: '1-09', unit_id: 1, unit_name: '수와 연산', type_name: '소수의 나눗셈', image_url: null, youtube_url: 'https://youtu.be/example9', order: 9, created_at: '' },
-  { id: '1-10', unit_id: 1, unit_name: '수와 연산', type_name: '약수와 배수', image_url: null, youtube_url: 'https://youtu.be/example10', order: 10, created_at: '' },
-  { id: '1-11', unit_id: 1, unit_name: '수와 연산', type_name: '최대공약수', image_url: null, youtube_url: 'https://youtu.be/example11', order: 11, created_at: '' },
-  { id: '1-12', unit_id: 1, unit_name: '수와 연산', type_name: '최소공배수', image_url: null, youtube_url: 'https://youtu.be/example12', order: 12, created_at: '' },
-  { id: '1-13', unit_id: 1, unit_name: '수와 연산', type_name: '정수의 이해', image_url: null, youtube_url: 'https://youtu.be/example13', order: 13, created_at: '' },
-  { id: '1-14', unit_id: 1, unit_name: '수와 연산', type_name: '정수의 덧셈뺄셈', image_url: null, youtube_url: 'https://youtu.be/example14', order: 14, created_at: '' },
-  { id: '1-15', unit_id: 1, unit_name: '수와 연산', type_name: '유리수의 이해', image_url: null, youtube_url: 'https://youtu.be/example15', order: 15, created_at: '' },
-  { id: '1-16', unit_id: 1, unit_name: '수와 연산', type_name: '유리수의 계산', image_url: null, youtube_url: 'https://youtu.be/example16', order: 16, created_at: '' },
+  { id: '7-1', set_id: 'math-grade7', parent_id: null, name: '수와 연산', is_leaf: false, order: 1, depth: 1, created_at: '' },
+  { id: '7-1-01', set_id: 'math-grade7', parent_id: '7-1', name: '자연수의 혼합 계산', is_leaf: true, order: 1, depth: 2, created_at: '' },
+  { id: '7-1-02', set_id: 'math-grade7', parent_id: '7-1', name: '분수의 덧셈', is_leaf: true, order: 2, depth: 2, created_at: '' },
+  { id: '7-1-03', set_id: 'math-grade7', parent_id: '7-1', name: '분수의 뺄셈', is_leaf: true, order: 3, depth: 2, created_at: '' },
+  { id: '7-1-04', set_id: 'math-grade7', parent_id: '7-1', name: '분수의 곱셈', is_leaf: true, order: 4, depth: 2, created_at: '' },
+  { id: '7-1-05', set_id: 'math-grade7', parent_id: '7-1', name: '분수의 나눗셈', is_leaf: true, order: 5, depth: 2, created_at: '' },
+  { id: '7-1-06', set_id: 'math-grade7', parent_id: '7-1', name: '소수의 덧셈', is_leaf: true, order: 6, depth: 2, created_at: '' },
+  { id: '7-1-07', set_id: 'math-grade7', parent_id: '7-1', name: '소수의 뺄셈', is_leaf: true, order: 7, depth: 2, created_at: '' },
+  { id: '7-1-08', set_id: 'math-grade7', parent_id: '7-1', name: '소수의 곱셈', is_leaf: true, order: 8, depth: 2, created_at: '' },
+  { id: '7-1-09', set_id: 'math-grade7', parent_id: '7-1', name: '소수의 나눗셈', is_leaf: true, order: 9, depth: 2, created_at: '' },
+  { id: '7-1-10', set_id: 'math-grade7', parent_id: '7-1', name: '약수와 배수', is_leaf: true, order: 10, depth: 2, created_at: '' },
+  { id: '7-1-11', set_id: 'math-grade7', parent_id: '7-1', name: '최대공약수', is_leaf: true, order: 11, depth: 2, created_at: '' },
+  { id: '7-1-12', set_id: 'math-grade7', parent_id: '7-1', name: '최소공배수', is_leaf: true, order: 12, depth: 2, created_at: '' },
+  { id: '7-1-13', set_id: 'math-grade7', parent_id: '7-1', name: '정수의 이해', is_leaf: true, order: 13, depth: 2, created_at: '' },
+  { id: '7-1-14', set_id: 'math-grade7', parent_id: '7-1', name: '정수의 덧셈뺄셈', is_leaf: true, order: 14, depth: 2, created_at: '' },
+  { id: '7-1-15', set_id: 'math-grade7', parent_id: '7-1', name: '유리수의 이해', is_leaf: true, order: 15, depth: 2, created_at: '' },
+  { id: '7-1-16', set_id: 'math-grade7', parent_id: '7-1', name: '유리수의 계산', is_leaf: true, order: 16, depth: 2, created_at: '' },
 
   // 대단원 2: 문자와 식
-  { id: '2-01', unit_id: 2, unit_name: '문자와 식', type_name: '문자의 사용', image_url: null, youtube_url: 'https://youtu.be/example17', order: 1, created_at: '' },
-  { id: '2-02', unit_id: 2, unit_name: '문자와 식', type_name: '식의 값', image_url: null, youtube_url: 'https://youtu.be/example18', order: 2, created_at: '' },
-  { id: '2-03', unit_id: 2, unit_name: '문자와 식', type_name: '일차식의 덧셈', image_url: null, youtube_url: 'https://youtu.be/example19', order: 3, created_at: '' },
-  { id: '2-04', unit_id: 2, unit_name: '문자와 식', type_name: '일차식의 뺄셈', image_url: null, youtube_url: 'https://youtu.be/example20', order: 4, created_at: '' },
-  { id: '2-05', unit_id: 2, unit_name: '문자와 식', type_name: '등식의 성질', image_url: null, youtube_url: 'https://youtu.be/example21', order: 5, created_at: '' },
-  { id: '2-06', unit_id: 2, unit_name: '문자와 식', type_name: '일차방정식 풀이', image_url: null, youtube_url: 'https://youtu.be/example22', order: 6, created_at: '' },
-  { id: '2-07', unit_id: 2, unit_name: '문자와 식', type_name: '일차방정식 활용1', image_url: null, youtube_url: 'https://youtu.be/example23', order: 7, created_at: '' },
-  { id: '2-08', unit_id: 2, unit_name: '문자와 식', type_name: '일차방정식 활용2', image_url: null, youtube_url: 'https://youtu.be/example24', order: 8, created_at: '' },
-  { id: '2-09', unit_id: 2, unit_name: '문자와 식', type_name: '부등식의 이해', image_url: null, youtube_url: 'https://youtu.be/example25', order: 9, created_at: '' },
-  { id: '2-10', unit_id: 2, unit_name: '문자와 식', type_name: '부등식의 성질', image_url: null, youtube_url: 'https://youtu.be/example26', order: 10, created_at: '' },
-  { id: '2-11', unit_id: 2, unit_name: '문자와 식', type_name: '일차부등식 풀이', image_url: null, youtube_url: 'https://youtu.be/example27', order: 11, created_at: '' },
-  { id: '2-12', unit_id: 2, unit_name: '문자와 식', type_name: '일차부등식 활용', image_url: null, youtube_url: 'https://youtu.be/example28', order: 12, created_at: '' },
-  { id: '2-13', unit_id: 2, unit_name: '문자와 식', type_name: '연립방정식의 이해', image_url: null, youtube_url: 'https://youtu.be/example29', order: 13, created_at: '' },
-  { id: '2-14', unit_id: 2, unit_name: '문자와 식', type_name: '연립방정식 풀이', image_url: null, youtube_url: 'https://youtu.be/example30', order: 14, created_at: '' },
-  { id: '2-15', unit_id: 2, unit_name: '문자와 식', type_name: '연립방정식 활용1', image_url: null, youtube_url: 'https://youtu.be/example31', order: 15, created_at: '' },
-  { id: '2-16', unit_id: 2, unit_name: '문자와 식', type_name: '연립방정식 활용2', image_url: null, youtube_url: 'https://youtu.be/example32', order: 16, created_at: '' },
+  { id: '7-2', set_id: 'math-grade7', parent_id: null, name: '문자와 식', is_leaf: false, order: 2, depth: 1, created_at: '' },
+  { id: '7-2-01', set_id: 'math-grade7', parent_id: '7-2', name: '문자의 사용', is_leaf: true, order: 1, depth: 2, created_at: '' },
+  { id: '7-2-02', set_id: 'math-grade7', parent_id: '7-2', name: '식의 값', is_leaf: true, order: 2, depth: 2, created_at: '' },
+  { id: '7-2-03', set_id: 'math-grade7', parent_id: '7-2', name: '일차식의 덧셈', is_leaf: true, order: 3, depth: 2, created_at: '' },
+  { id: '7-2-04', set_id: 'math-grade7', parent_id: '7-2', name: '일차식의 뺄셈', is_leaf: true, order: 4, depth: 2, created_at: '' },
+  { id: '7-2-05', set_id: 'math-grade7', parent_id: '7-2', name: '등식의 성질', is_leaf: true, order: 5, depth: 2, created_at: '' },
+  { id: '7-2-06', set_id: 'math-grade7', parent_id: '7-2', name: '일차방정식 풀이', is_leaf: true, order: 6, depth: 2, created_at: '' },
+  { id: '7-2-07', set_id: 'math-grade7', parent_id: '7-2', name: '일차방정식 활용1', is_leaf: true, order: 7, depth: 2, created_at: '' },
+  { id: '7-2-08', set_id: 'math-grade7', parent_id: '7-2', name: '일차방정식 활용2', is_leaf: true, order: 8, depth: 2, created_at: '' },
+  { id: '7-2-09', set_id: 'math-grade7', parent_id: '7-2', name: '부등식의 이해', is_leaf: true, order: 9, depth: 2, created_at: '' },
+  { id: '7-2-10', set_id: 'math-grade7', parent_id: '7-2', name: '부등식의 성질', is_leaf: true, order: 10, depth: 2, created_at: '' },
+  { id: '7-2-11', set_id: 'math-grade7', parent_id: '7-2', name: '일차부등식 풀이', is_leaf: true, order: 11, depth: 2, created_at: '' },
+  { id: '7-2-12', set_id: 'math-grade7', parent_id: '7-2', name: '일차부등식 활용', is_leaf: true, order: 12, depth: 2, created_at: '' },
+  { id: '7-2-13', set_id: 'math-grade7', parent_id: '7-2', name: '연립방정식의 이해', is_leaf: true, order: 13, depth: 2, created_at: '' },
+  { id: '7-2-14', set_id: 'math-grade7', parent_id: '7-2', name: '연립방정식 풀이', is_leaf: true, order: 14, depth: 2, created_at: '' },
+  { id: '7-2-15', set_id: 'math-grade7', parent_id: '7-2', name: '연립방정식 활용1', is_leaf: true, order: 15, depth: 2, created_at: '' },
+  { id: '7-2-16', set_id: 'math-grade7', parent_id: '7-2', name: '연립방정식 활용2', is_leaf: true, order: 16, depth: 2, created_at: '' },
 
   // 대단원 3: 함수
-  { id: '3-01', unit_id: 3, unit_name: '함수', type_name: '좌표평면의 이해', image_url: null, youtube_url: 'https://youtu.be/example33', order: 1, created_at: '' },
-  { id: '3-02', unit_id: 3, unit_name: '함수', type_name: '정비례 관계', image_url: null, youtube_url: 'https://youtu.be/example34', order: 2, created_at: '' },
-  { id: '3-03', unit_id: 3, unit_name: '함수', type_name: '반비례 관계', image_url: null, youtube_url: 'https://youtu.be/example35', order: 3, created_at: '' },
-  { id: '3-04', unit_id: 3, unit_name: '함수', type_name: '함수의 개념', image_url: null, youtube_url: 'https://youtu.be/example36', order: 4, created_at: '' },
-  { id: '3-05', unit_id: 3, unit_name: '함수', type_name: '함수값 구하기', image_url: null, youtube_url: 'https://youtu.be/example37', order: 5, created_at: '' },
-  { id: '3-06', unit_id: 3, unit_name: '함수', type_name: '일차함수의 뜻', image_url: null, youtube_url: 'https://youtu.be/example38', order: 6, created_at: '' },
-  { id: '3-07', unit_id: 3, unit_name: '함수', type_name: '일차함수 그래프', image_url: null, youtube_url: 'https://youtu.be/example39', order: 7, created_at: '' },
-  { id: '3-08', unit_id: 3, unit_name: '함수', type_name: '기울기와 y절편', image_url: null, youtube_url: 'https://youtu.be/example40', order: 8, created_at: '' },
-  { id: '3-09', unit_id: 3, unit_name: '함수', type_name: '일차함수 식 구하기', image_url: null, youtube_url: 'https://youtu.be/example41', order: 9, created_at: '' },
-  { id: '3-10', unit_id: 3, unit_name: '함수', type_name: '일차함수 활용', image_url: null, youtube_url: 'https://youtu.be/example42', order: 10, created_at: '' },
-  { id: '3-11', unit_id: 3, unit_name: '함수', type_name: '일차함수와 방정식', image_url: null, youtube_url: 'https://youtu.be/example43', order: 11, created_at: '' },
-  { id: '3-12', unit_id: 3, unit_name: '함수', type_name: '두 직선의 위치관계', image_url: null, youtube_url: 'https://youtu.be/example44', order: 12, created_at: '' },
-  { id: '3-13', unit_id: 3, unit_name: '함수', type_name: '연립방정식과 그래프', image_url: null, youtube_url: 'https://youtu.be/example45', order: 13, created_at: '' },
-  { id: '3-14', unit_id: 3, unit_name: '함수', type_name: '이차함수의 뜻', image_url: null, youtube_url: 'https://youtu.be/example46', order: 14, created_at: '' },
-  { id: '3-15', unit_id: 3, unit_name: '함수', type_name: '이차함수 그래프', image_url: null, youtube_url: 'https://youtu.be/example47', order: 15, created_at: '' },
-  { id: '3-16', unit_id: 3, unit_name: '함수', type_name: '이차함수 활용', image_url: null, youtube_url: 'https://youtu.be/example48', order: 16, created_at: '' },
+  { id: '7-3', set_id: 'math-grade7', parent_id: null, name: '함수', is_leaf: false, order: 3, depth: 1, created_at: '' },
+  { id: '7-3-01', set_id: 'math-grade7', parent_id: '7-3', name: '좌표평면의 이해', is_leaf: true, order: 1, depth: 2, created_at: '' },
+  { id: '7-3-02', set_id: 'math-grade7', parent_id: '7-3', name: '정비례 관계', is_leaf: true, order: 2, depth: 2, created_at: '' },
+  { id: '7-3-03', set_id: 'math-grade7', parent_id: '7-3', name: '반비례 관계', is_leaf: true, order: 3, depth: 2, created_at: '' },
+  { id: '7-3-04', set_id: 'math-grade7', parent_id: '7-3', name: '함수의 개념', is_leaf: true, order: 4, depth: 2, created_at: '' },
+  { id: '7-3-05', set_id: 'math-grade7', parent_id: '7-3', name: '함수값 구하기', is_leaf: true, order: 5, depth: 2, created_at: '' },
+  { id: '7-3-06', set_id: 'math-grade7', parent_id: '7-3', name: '일차함수의 뜻', is_leaf: true, order: 6, depth: 2, created_at: '' },
+  { id: '7-3-07', set_id: 'math-grade7', parent_id: '7-3', name: '일차함수 그래프', is_leaf: true, order: 7, depth: 2, created_at: '' },
+  { id: '7-3-08', set_id: 'math-grade7', parent_id: '7-3', name: '기울기와 y절편', is_leaf: true, order: 8, depth: 2, created_at: '' },
+  { id: '7-3-09', set_id: 'math-grade7', parent_id: '7-3', name: '일차함수 식 구하기', is_leaf: true, order: 9, depth: 2, created_at: '' },
+  { id: '7-3-10', set_id: 'math-grade7', parent_id: '7-3', name: '일차함수 활용', is_leaf: true, order: 10, depth: 2, created_at: '' },
+  { id: '7-3-11', set_id: 'math-grade7', parent_id: '7-3', name: '일차함수와 방정식', is_leaf: true, order: 11, depth: 2, created_at: '' },
+  { id: '7-3-12', set_id: 'math-grade7', parent_id: '7-3', name: '두 직선의 위치관계', is_leaf: true, order: 12, depth: 2, created_at: '' },
+  { id: '7-3-13', set_id: 'math-grade7', parent_id: '7-3', name: '연립방정식과 그래프', is_leaf: true, order: 13, depth: 2, created_at: '' },
+  { id: '7-3-14', set_id: 'math-grade7', parent_id: '7-3', name: '이차함수의 뜻', is_leaf: true, order: 14, depth: 2, created_at: '' },
+  { id: '7-3-15', set_id: 'math-grade7', parent_id: '7-3', name: '이차함수 그래프', is_leaf: true, order: 15, depth: 2, created_at: '' },
+  { id: '7-3-16', set_id: 'math-grade7', parent_id: '7-3', name: '이차함수 활용', is_leaf: true, order: 16, depth: 2, created_at: '' },
 
   // 대단원 4: 기하
-  { id: '4-01', unit_id: 4, unit_name: '기하', type_name: '점 직선 면', image_url: null, youtube_url: 'https://youtu.be/example49', order: 1, created_at: '' },
-  { id: '4-02', unit_id: 4, unit_name: '기하', type_name: '각의 종류', image_url: null, youtube_url: 'https://youtu.be/example50', order: 2, created_at: '' },
-  { id: '4-03', unit_id: 4, unit_name: '기하', type_name: '맞꼭지각', image_url: null, youtube_url: 'https://youtu.be/example51', order: 3, created_at: '' },
-  { id: '4-04', unit_id: 4, unit_name: '기하', type_name: '평행선과 동위각', image_url: null, youtube_url: 'https://youtu.be/example52', order: 4, created_at: '' },
-  { id: '4-05', unit_id: 4, unit_name: '기하', type_name: '삼각형의 성질', image_url: null, youtube_url: 'https://youtu.be/example53', order: 5, created_at: '' },
-  { id: '4-06', unit_id: 4, unit_name: '기하', type_name: '삼각형의 합동', image_url: null, youtube_url: 'https://youtu.be/example54', order: 6, created_at: '' },
-  { id: '4-07', unit_id: 4, unit_name: '기하', type_name: '이등변삼각형', image_url: null, youtube_url: 'https://youtu.be/example55', order: 7, created_at: '' },
-  { id: '4-08', unit_id: 4, unit_name: '기하', type_name: '직각삼각형의 합동', image_url: null, youtube_url: 'https://youtu.be/example56', order: 8, created_at: '' },
-  { id: '4-09', unit_id: 4, unit_name: '기하', type_name: '사각형의 성질', image_url: null, youtube_url: 'https://youtu.be/example57', order: 9, created_at: '' },
-  { id: '4-10', unit_id: 4, unit_name: '기하', type_name: '평행사변형', image_url: null, youtube_url: 'https://youtu.be/example58', order: 10, created_at: '' },
-  { id: '4-11', unit_id: 4, unit_name: '기하', type_name: '여러 가지 사각형', image_url: null, youtube_url: 'https://youtu.be/example59', order: 11, created_at: '' },
-  { id: '4-12', unit_id: 4, unit_name: '기하', type_name: '닮음의 뜻', image_url: null, youtube_url: 'https://youtu.be/example60', order: 12, created_at: '' },
-  { id: '4-13', unit_id: 4, unit_name: '기하', type_name: '닮음비와 넓이비', image_url: null, youtube_url: 'https://youtu.be/example61', order: 13, created_at: '' },
-  { id: '4-14', unit_id: 4, unit_name: '기하', type_name: '피타고라스 정리', image_url: null, youtube_url: 'https://youtu.be/example62', order: 14, created_at: '' },
-  { id: '4-15', unit_id: 4, unit_name: '기하', type_name: '원의 성질', image_url: null, youtube_url: 'https://youtu.be/example63', order: 15, created_at: '' },
-  { id: '4-16', unit_id: 4, unit_name: '기하', type_name: '원의 넓이', image_url: null, youtube_url: 'https://youtu.be/example64', order: 16, created_at: '' },
+  { id: '7-4', set_id: 'math-grade7', parent_id: null, name: '기하', is_leaf: false, order: 4, depth: 1, created_at: '' },
+  { id: '7-4-01', set_id: 'math-grade7', parent_id: '7-4', name: '점 직선 면', is_leaf: true, order: 1, depth: 2, created_at: '' },
+  { id: '7-4-02', set_id: 'math-grade7', parent_id: '7-4', name: '각의 종류', is_leaf: true, order: 2, depth: 2, created_at: '' },
+  { id: '7-4-03', set_id: 'math-grade7', parent_id: '7-4', name: '맞꼭지각', is_leaf: true, order: 3, depth: 2, created_at: '' },
+  { id: '7-4-04', set_id: 'math-grade7', parent_id: '7-4', name: '평행선과 동위각', is_leaf: true, order: 4, depth: 2, created_at: '' },
+  { id: '7-4-05', set_id: 'math-grade7', parent_id: '7-4', name: '삼각형의 성질', is_leaf: true, order: 5, depth: 2, created_at: '' },
+  { id: '7-4-06', set_id: 'math-grade7', parent_id: '7-4', name: '삼각형의 합동', is_leaf: true, order: 6, depth: 2, created_at: '' },
+  { id: '7-4-07', set_id: 'math-grade7', parent_id: '7-4', name: '이등변삼각형', is_leaf: true, order: 7, depth: 2, created_at: '' },
+  { id: '7-4-08', set_id: 'math-grade7', parent_id: '7-4', name: '직각삼각형의 합동', is_leaf: true, order: 8, depth: 2, created_at: '' },
+  { id: '7-4-09', set_id: 'math-grade7', parent_id: '7-4', name: '사각형의 성질', is_leaf: true, order: 9, depth: 2, created_at: '' },
+  { id: '7-4-10', set_id: 'math-grade7', parent_id: '7-4', name: '평행사변형', is_leaf: true, order: 10, depth: 2, created_at: '' },
+  { id: '7-4-11', set_id: 'math-grade7', parent_id: '7-4', name: '여러 가지 사각형', is_leaf: true, order: 11, depth: 2, created_at: '' },
+  { id: '7-4-12', set_id: 'math-grade7', parent_id: '7-4', name: '닮음의 뜻', is_leaf: true, order: 12, depth: 2, created_at: '' },
+  { id: '7-4-13', set_id: 'math-grade7', parent_id: '7-4', name: '닮음비와 넓이비', is_leaf: true, order: 13, depth: 2, created_at: '' },
+  { id: '7-4-14', set_id: 'math-grade7', parent_id: '7-4', name: '피타고라스 정리', is_leaf: true, order: 14, depth: 2, created_at: '' },
+  { id: '7-4-15', set_id: 'math-grade7', parent_id: '7-4', name: '원의 성질', is_leaf: true, order: 15, depth: 2, created_at: '' },
+  { id: '7-4-16', set_id: 'math-grade7', parent_id: '7-4', name: '원의 넓이', is_leaf: true, order: 16, depth: 2, created_at: '' },
 ];
 
 // 샘플 진행 상태 (테스트용)
 export const SAMPLE_PROGRESS: Record<string, StatusColor> = {
-  '1-01': 'GREEN',
-  '1-02': 'GREEN',
-  '1-03': 'BLUE',
-  '1-04': 'RED',
-  '1-05': 'GREEN',
-  '1-06': 'BLUE',
-  '1-07': 'BLUE',
-  '1-08': 'GREEN',
-  '1-09': 'RED',
-  '1-10': 'GREEN',
-  '1-11': 'BLACK',
-  '1-12': 'BLACK',
-  '1-13': 'BLACK',
-  '1-14': 'BLACK',
-  '1-15': 'BLACK',
-  '1-16': 'BLACK',
-  '2-01': 'GREEN',
-  '2-02': 'GREEN',
-  '2-03': 'BLUE',
-  '2-04': 'GREEN',
-  '2-05': 'GREEN',
-  '2-06': 'GREEN',
-  '2-07': 'BLUE',
-  '2-08': 'BLUE',
-  '2-09': 'RED',
-  '2-10': 'BLACK',
-  '2-11': 'BLACK',
-  '2-12': 'BLACK',
-  '2-13': 'BLACK',
-  '2-14': 'BLACK',
-  '2-15': 'BLACK',
-  '2-16': 'BLACK',
+  '7-1-01': 'GREEN',
+  '7-1-02': 'GREEN',
+  '7-1-03': 'BLUE',
+  '7-1-04': 'RED',
+  '7-1-05': 'GREEN',
+  '7-1-06': 'BLUE',
+  '7-1-07': 'BLUE',
+  '7-1-08': 'GREEN',
+  '7-1-09': 'RED',
+  '7-1-10': 'GREEN',
+  '7-1-11': 'BLACK',
+  '7-1-12': 'BLACK',
+  '7-1-13': 'BLACK',
+  '7-1-14': 'BLACK',
+  '7-1-15': 'BLACK',
+  '7-1-16': 'BLACK',
+  '7-2-01': 'GREEN',
+  '7-2-02': 'GREEN',
+  '7-2-03': 'BLUE',
+  '7-2-04': 'GREEN',
+  '7-2-05': 'GREEN',
+  '7-2-06': 'GREEN',
+  '7-2-07': 'BLUE',
+  '7-2-08': 'BLUE',
+  '7-2-09': 'RED',
+  '7-2-10': 'BLACK',
+  '7-2-11': 'BLACK',
+  '7-2-12': 'BLACK',
+  '7-2-13': 'BLACK',
+  '7-2-14': 'BLACK',
+  '7-2-15': 'BLACK',
+  '7-2-16': 'BLACK',
 };
 
-export function getUnitsWithProgress(curriculum: Curriculum[], progress: Record<string, StatusColor>) {
-  const unitMap = new Map<number, { name: string; items: Curriculum[] }>();
+// 샘플 메모 (학생 메모 + 관리자 처방)
+export const SAMPLE_MEMOS: Record<string, Omit<CurriculumMemo, 'id' | 'user_id' | 'updated_at'>> = {
+  '7-1-04': {
+    item_id: '7-1-04',
+    student_memo: '분수의 곱셈이 너무 어려워요. 특히 대분수 곱셈이 헷갈려요.',
+    admin_memo: '대분수를 가분수로 바꾸는 연습부터 시작하세요. 아래 영상 참고!',
+    youtube_url: 'https://youtu.be/example_fraction',
+  },
+  '7-1-09': {
+    item_id: '7-1-09',
+    student_memo: '소수점 위치가 자꾸 틀려요',
+    admin_memo: null,
+    youtube_url: null,
+  },
+  '7-2-09': {
+    item_id: '7-2-09',
+    student_memo: '부등호 방향이 헷갈려요',
+    admin_memo: '음수를 곱하거나 나눌 때 부등호 방향이 바뀌는 것 기억하세요!',
+    youtube_url: 'https://youtu.be/example_inequality',
+  },
+};
 
-  curriculum.forEach((item) => {
-    if (!unitMap.has(item.unit_id)) {
-      unitMap.set(item.unit_id, { name: item.unit_name, items: [] });
-    }
-    unitMap.get(item.unit_id)!.items.push(item);
-  });
+// 샘플 프로필 (데모용)
+export const SAMPLE_PROFILES: Profile[] = [
+  {
+    id: 'demo-admin',
+    email: 'admin@demo.com',
+    name: '관리자',
+    role: 'admin',
+    curriculum_id: null,
+    linked_student_id: null,
+    created_at: '',
+    approved_at: '',
+    approved_by: null,
+  },
+  // 학생 5명
+  {
+    id: 'student-1',
+    email: 'minsu@demo.com',
+    name: '김민수',
+    role: 'student',
+    curriculum_id: 'math-grade7',
+    linked_student_id: null,
+    created_at: '',
+    approved_at: '',
+    approved_by: 'demo-admin',
+  },
+  {
+    id: 'student-2',
+    email: 'jieun@demo.com',
+    name: '이지은',
+    role: 'student',
+    curriculum_id: 'math-grade7',
+    linked_student_id: null,
+    created_at: '',
+    approved_at: '',
+    approved_by: 'demo-admin',
+  },
+  {
+    id: 'student-3',
+    email: 'junyoung@demo.com',
+    name: '박준영',
+    role: 'student',
+    curriculum_id: 'math-grade8',
+    linked_student_id: null,
+    created_at: '',
+    approved_at: '',
+    approved_by: 'demo-admin',
+  },
+  {
+    id: 'student-4',
+    email: 'seoyeon@demo.com',
+    name: '최서연',
+    role: 'student',
+    curriculum_id: 'math-grade7',
+    linked_student_id: null,
+    created_at: '',
+    approved_at: '',
+    approved_by: 'demo-admin',
+  },
+  {
+    id: 'student-5',
+    email: 'hojin@demo.com',
+    name: '정호진',
+    role: 'student',
+    curriculum_id: 'math-grade6',
+    linked_student_id: null,
+    created_at: '',
+    approved_at: '',
+    approved_by: 'demo-admin',
+  },
+  // 학부모 1명
+  {
+    id: 'demo-parent',
+    email: 'parent@demo.com',
+    name: '김민수 학부모',
+    role: 'parent',
+    curriculum_id: null,
+    linked_student_id: 'student-1',
+    created_at: '',
+    approved_at: '',
+    approved_by: 'demo-admin',
+  },
+];
 
-  return Array.from(unitMap.entries()).map(([id, data]) => {
-    const greenCount = data.items.filter((item) => progress[item.id] === 'GREEN').length;
+// 리프 노드만 필터링
+export function getLeafItems(items: CurriculumItem[]): CurriculumItem[] {
+  return items.filter(item => item.is_leaf);
+}
+
+// 부모 노드별로 그룹화 (빙고판 단원별 표시용)
+export function getUnitGroups(items: CurriculumItem[], progress: Record<string, StatusColor>): UnitGroup[] {
+  const parentItems = items.filter(item => !item.is_leaf && item.parent_id === null);
+
+  return parentItems.map(parent => {
+    const children = items.filter(item => item.parent_id === parent.id && item.is_leaf);
+    const greenCount = children.filter(item => progress[item.id] === 'GREEN').length;
+
     return {
-      id,
-      name: data.name,
-      items: data.items.sort((a, b) => a.order - b.order),
+      id: parent.id,
+      name: parent.name,
+      items: children.sort((a, b) => a.order - b.order),
       progress: greenCount,
-      total: data.items.length,
+      total: children.length,
     };
+  }).sort((a, b) => {
+    const aOrder = items.find(i => i.id === a.id)?.order ?? 0;
+    const bOrder = items.find(i => i.id === b.id)?.order ?? 0;
+    return aOrder - bOrder;
   });
+}
+
+// 트리 구조로 변환 (커리큘럼 관리용)
+export interface TreeNode extends CurriculumItem {
+  children: TreeNode[];
+}
+
+export function buildTree(items: CurriculumItem[]): TreeNode[] {
+  const itemMap = new Map<string, TreeNode>();
+  const roots: TreeNode[] = [];
+
+  // 모든 항목을 TreeNode로 변환
+  items.forEach(item => {
+    itemMap.set(item.id, { ...item, children: [] });
+  });
+
+  // 부모-자식 관계 구축
+  items.forEach(item => {
+    const node = itemMap.get(item.id)!;
+    if (item.parent_id === null) {
+      roots.push(node);
+    } else {
+      const parent = itemMap.get(item.parent_id);
+      if (parent) {
+        parent.children.push(node);
+      }
+    }
+  });
+
+  // 정렬
+  const sortNodes = (nodes: TreeNode[]) => {
+    nodes.sort((a, b) => a.order - b.order);
+    nodes.forEach(node => sortNodes(node.children));
+  };
+  sortNodes(roots);
+
+  return roots;
 }
