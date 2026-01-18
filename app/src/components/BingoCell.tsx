@@ -17,7 +17,8 @@ export default function BingoCell({ item, status, onClick, disabled }: BingoCell
       onClick={onClick}
       disabled={disabled}
       className={`
-        aspect-square rounded-xl flex items-center justify-center p-2
+        aspect-square rounded-lg sm:rounded-xl flex items-center justify-center p-1.5 sm:p-2
+        min-h-[60px] sm:min-h-[70px] lg:min-h-[80px]
         transition-all
         ${disabled ? 'cursor-not-allowed opacity-80' : 'hover:scale-105 tap-effect cursor-pointer'}
       `}
@@ -26,7 +27,7 @@ export default function BingoCell({ item, status, onClick, disabled }: BingoCell
         color: config.textColor,
       }}
     >
-      <span className="text-xs font-medium text-center line-clamp-3 leading-tight">
+      <span className="text-[10px] sm:text-xs lg:text-sm font-medium text-center line-clamp-3 leading-tight">
         {item.name}
       </span>
     </button>

@@ -37,7 +37,7 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // 공개 경로
-  const publicPaths = ['/login', '/auth/callback'];
+  const publicPaths = ['/login', '/auth/callback', '/debug'];
   const isPublicPath = publicPaths.some((path) => pathname.startsWith(path));
 
   // 미인증 사용자가 보호된 경로 접근 시
@@ -82,6 +82,6 @@ export const config = {
      * - favicon.ico (파비콘)
      * - 이미지 파일들
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|manifest.json|.*\\.(?:svg|png|jpg|jpeg|gif|webp|json)$).*)',
   ],
 };
