@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Circle } from 'lucide-react';
+import { Circle, PenSquare, MessageCircle, Youtube } from 'lucide-react';
 import { CurriculumItem, CurriculumMemo, StatusColor, UserRole, STATUS_CONFIG, ROLE_PERMISSIONS } from '@/types/database';
 
 const StatusIcon = ({ status, size = 20 }: { status: StatusColor; size?: number }) => {
@@ -73,20 +73,20 @@ export default function DetailModal({
       />
 
       {/* Modal */}
-      <div className="relative bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative bg-white rounded-2xl w-full max-w-[calc(100%-2rem)] sm:max-w-md lg:max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl animate-in fade-in zoom-in-95 duration-200">
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 z-10"
+          className="absolute top-2 right-2 sm:top-3 sm:right-3 w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 z-10"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
 
         {/* Header */}
-        <div className="p-4 border-b">
-          <h3 className="text-lg font-bold text-gray-800 pr-8">
+        <div className="p-3 sm:p-4 border-b">
+          <h3 className="text-base sm:text-lg font-bold text-gray-800 pr-8">
             {item.name}
           </h3>
           <div className="flex items-center gap-2 mt-1">
@@ -97,11 +97,11 @@ export default function DetailModal({
           </div>
         </div>
 
-        <div className="p-4 space-y-4">
+        <div className="p-3 sm:p-4 space-y-3 sm:space-y-4">
           {/* 학생 메모 영역 */}
           <div>
-            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-              <span className="text-lg">&#128221;</span>
+            <label className="flex items-center gap-2 text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
+              <PenSquare size={18} className="text-yellow-500" />
               나의 메모
               {userRole === 'admin' && (
                 <span className="text-xs text-gray-400">(읽기 전용)</span>
@@ -126,8 +126,8 @@ export default function DetailModal({
 
           {/* 관리자 처방 영역 */}
           <div>
-            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-              <span className="text-lg">&#128172;</span>
+            <label className="flex items-center gap-2 text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
+              <MessageCircle size={18} className="text-blue-500" />
               관리자 처방
               {userRole === 'student' && (
                 <span className="text-xs text-gray-400">(읽기 전용)</span>
@@ -153,8 +153,8 @@ export default function DetailModal({
           {/* YouTube URL 입력 (관리자만) */}
           {permissions.canEditYoutube && (
             <div>
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                <span className="text-lg">&#9654;&#65039;</span>
+              <label className="flex items-center gap-2 text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
+                <Youtube size={18} className="text-red-500" />
                 유튜브 링크
               </label>
               <input
@@ -198,10 +198,10 @@ export default function DetailModal({
           {/* 상태 변경 버튼 */}
           {permissions.canChangeStatus && (
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-2 block">
+              <label className="text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2 block">
                 학습 상태
               </label>
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {(Object.keys(STATUS_CONFIG) as StatusColor[]).map((status) => {
                   const config = STATUS_CONFIG[status];
                   const isActive = currentStatus === status;

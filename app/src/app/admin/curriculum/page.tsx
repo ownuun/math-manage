@@ -207,49 +207,49 @@ function TreeNodeComponent({
   return (
     <div>
       <div
-        className="group flex items-center gap-2 py-2 px-3 hover:bg-gray-50 rounded-lg"
-        style={{ marginLeft: depth * 16 }}
+        className="group flex items-center gap-1.5 sm:gap-2 py-1.5 sm:py-2 px-2 sm:px-3 hover:bg-gray-50 rounded-lg"
+        style={{ marginLeft: depth * 12 }}
       >
         {/* 확장/축소 아이콘 */}
         <button
-          className="w-5 h-5 flex items-center justify-center"
+          className="w-4 sm:w-5 h-4 sm:h-5 flex items-center justify-center flex-shrink-0"
           onClick={() => hasChildren && toggleExpand(node.id)}
         >
           {hasChildren ? (
             isExpanded ? (
-              <ChevronDown size={16} className="text-gray-400" />
+              <ChevronDown size={14} className="sm:w-4 sm:h-4 text-gray-400" />
             ) : (
-              <ChevronRight size={16} className="text-gray-400" />
+              <ChevronRight size={14} className="sm:w-4 sm:h-4 text-gray-400" />
             )
           ) : (
-            <span className="w-4" />
+            <span className="w-3 sm:w-4" />
           )}
         </button>
 
         {/* 폴더/파일 아이콘 */}
         {isLeaf ? (
-          <FileText size={16} className="text-blue-500 flex-shrink-0" />
+          <FileText size={14} className="sm:w-4 sm:h-4 text-blue-500 flex-shrink-0" />
         ) : (
-          <Folder size={16} className="text-yellow-500 flex-shrink-0" />
+          <Folder size={14} className="sm:w-4 sm:h-4 text-yellow-500 flex-shrink-0" />
         )}
 
         {/* 이름 */}
-        <span className={`flex-1 text-sm ${isLeaf ? 'text-gray-700' : 'font-medium text-gray-800'}`}>
+        <span className={`flex-1 text-xs sm:text-sm truncate ${isLeaf ? 'text-gray-700' : 'font-medium text-gray-800'}`}>
           {node.name}
         </span>
 
-        {/* 액션 버튼 */}
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        {/* 액션 버튼 - 모바일에서 항상 보임 */}
+        <div className="flex items-center gap-0.5 sm:gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex-shrink-0">
           {canAddChild && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 onAddChild(node.id, node.depth);
               }}
-              className="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-200"
+              className="w-6 sm:w-7 h-6 sm:h-7 flex items-center justify-center rounded hover:bg-gray-200"
               title="하위 항목 추가"
             >
-              <Plus size={14} className="text-green-600" />
+              <Plus size={12} className="sm:w-3.5 sm:h-3.5 text-green-600" />
             </button>
           )}
           <button
@@ -257,25 +257,25 @@ function TreeNodeComponent({
               e.stopPropagation();
               onEdit(node);
             }}
-            className="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-200"
+            className="w-6 sm:w-7 h-6 sm:h-7 flex items-center justify-center rounded hover:bg-gray-200"
             title="편집"
           >
-            <Pencil size={14} className="text-blue-600" />
+            <Pencil size={12} className="sm:w-3.5 sm:h-3.5 text-blue-600" />
           </button>
           <button
             onClick={(e) => {
               e.stopPropagation();
               onDelete(node);
             }}
-            className="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-200"
+            className="w-6 sm:w-7 h-6 sm:h-7 flex items-center justify-center rounded hover:bg-gray-200"
             title="삭제"
           >
-            <Trash2 size={14} className="text-red-600" />
+            <Trash2 size={12} className="sm:w-3.5 sm:h-3.5 text-red-600" />
           </button>
         </div>
 
-        {/* depth 표시 */}
-        <span className="text-xs text-gray-400 ml-2">depth {node.depth}</span>
+        {/* depth 표시 - 모바일에서 숨김 */}
+        <span className="hidden sm:inline text-xs text-gray-400 ml-2">depth {node.depth}</span>
       </div>
 
       {/* 자식 노드 */}
@@ -532,37 +532,37 @@ export default function CurriculumPage() {
 
       <main className="max-w-4xl mx-auto px-4 py-6 space-y-4">
         {/* 커리큘럼 선택 및 컨트롤 */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <select
             value={selectedSet}
             onChange={(e) => {
               setSelectedSet(e.target.value);
               setExpandedNodes(new Set());
             }}
-            className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-auto"
           >
             {curriculumSets.map(set => (
               <option key={set.id} value={set.id}>{set.name}</option>
             ))}
           </select>
 
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <button
               onClick={handleAddRoot}
-              className="px-3 py-1.5 text-sm bg-green-500 text-white hover:bg-green-600 rounded-lg flex items-center gap-1"
+              className="px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm bg-green-500 text-white hover:bg-green-600 rounded-lg flex items-center gap-1 flex-1 sm:flex-none justify-center"
             >
               <Plus size={14} />
-              항목 추가
+              <span>항목 추가</span>
             </button>
             <button
               onClick={expandAll}
-              className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg"
+              className="px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg border border-gray-200 flex-1 sm:flex-none"
             >
               모두 펼치기
             </button>
             <button
               onClick={collapseAll}
-              className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg"
+              className="px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg border border-gray-200 flex-1 sm:flex-none"
             >
               모두 접기
             </button>

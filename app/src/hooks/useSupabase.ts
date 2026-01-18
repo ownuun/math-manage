@@ -91,9 +91,26 @@ export function useSupabase(targetUserId?: string) {
       setMemos(memosMap);
 
       // Units 계산 (부모 노드별 그룹화)
+      // 재귀적으로 모든 하위 leaf 항목 찾기
+      const getAllLeafChildren = (items: CurriculumItem[], parentId: string): CurriculumItem[] => {
+        const directChildren = items.filter(item => item.parent_id === parentId);
+        let allLeaves: CurriculumItem[] = [];
+
+        directChildren.forEach(child => {
+          if (child.is_leaf) {
+            allLeaves.push(child);
+          } else {
+            // 폴더면 재귀적으로 탐색
+            allLeaves = allLeaves.concat(getAllLeafChildren(items, child.id));
+          }
+        });
+
+        return allLeaves;
+      };
+
       const parentItems = (itemsData || []).filter(item => !item.is_leaf && item.parent_id === null);
       const unitsData: UnitGroup[] = parentItems.map(parent => {
-        const children = (itemsData || []).filter(item => item.parent_id === parent.id && item.is_leaf);
+        const children = getAllLeafChildren(itemsData || [], parent.id);
         const greenCount = children.filter(item => progressMap[item.id] === 'GREEN').length;
 
         return {

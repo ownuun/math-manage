@@ -71,14 +71,14 @@ export default function LoginPage() {
   return (
     <div className="min-h-dvh flex flex-col bg-gradient-to-br from-green-500 to-emerald-600">
       {/* Header */}
-      <div className="flex-1 flex flex-col items-center justify-center p-6">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">수학 그린라이트</h1>
-          <p className="text-green-100">채점하지 말고 색칠하라!</p>
+      <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-6">
+        <div className="text-center mb-6 sm:mb-8">
+          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">수학 그린라이트</h1>
+          <p className="text-sm sm:text-base text-green-100">채점하지 말고 색칠하라!</p>
         </div>
 
         {/* Auth Card */}
-        <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6">
+        <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-4 sm:p-6">
           {/* Mode Toggle */}
           <div className="flex mb-6 bg-gray-100 rounded-lg p-1">
             <button

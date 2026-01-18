@@ -27,12 +27,15 @@ export interface Profile {
   id: string;
   email: string;
   name: string;
+  phone: string | null;
   role: UserRole;
   curriculum_id: string | null;
   linked_student_id: string | null;
   created_at: string;
   approved_at: string | null;
   approved_by: string | null;
+  is_archived: boolean;
+  archived_at: string | null;
 }
 
 // 학생별 진행 상태

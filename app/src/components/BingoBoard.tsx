@@ -78,14 +78,14 @@ export default function BingoBoard({
       <main className="flex-1 p-4">
         {isListMode ? (
           // 리스트 모드 (26개 이상)
-          <div className="max-w-md mx-auto space-y-2">
+          <div className="max-w-full sm:max-w-lg lg:max-w-xl mx-auto space-y-2">
             {unit.items.map((item) => (
               <button
                 key={item.id}
                 onClick={() => handleCellClick(item)}
                 disabled={!permissions.canOpenDetail}
                 className={`
-                  w-full p-3 rounded-lg flex items-center gap-3
+                  w-full p-2.5 sm:p-3 rounded-lg flex items-center gap-3
                   transition-all
                   ${permissions.canOpenDetail ? 'hover:opacity-80 cursor-pointer' : 'cursor-not-allowed'}
                 `}
@@ -94,14 +94,14 @@ export default function BingoBoard({
                   color: STATUS_CONFIG[progress[item.id] || 'BLACK'].textColor,
                 }}
               >
-                <span className="text-sm font-medium">{item.name}</span>
+                <span className="text-xs sm:text-sm font-medium">{item.name}</span>
               </button>
             ))}
           </div>
         ) : (
           // 그리드 모드
           <div
-            className="max-w-md mx-auto gap-2"
+            className="max-w-full sm:max-w-lg lg:max-w-xl mx-auto gap-1.5 sm:gap-2"
             style={{
               display: 'grid',
               gridTemplateColumns: `repeat(${gridSize.cols}, 1fr)`,
