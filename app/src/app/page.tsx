@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { LogOut, Folder, ChevronRight, ChevronLeft, Home as HomeIcon } from 'lucide-react';
 import { CurriculumItem, UnitGroup, StatusColor, STATUS_CONFIG, ROLE_PERMISSIONS } from '@/types/database';
@@ -16,6 +17,8 @@ interface FolderPath {
 }
 
 export default function Home() {
+  const router = useRouter();
+
   // 현재 폴더 ID (null = 최상위)
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
   // 폴더 경로 (브레드크럼용)
@@ -149,6 +152,13 @@ export default function Home() {
     }
   };
 
+  // 관리자는 관리자 대시보드로 리다이렉트
+  useEffect(() => {
+    if (!authLoading && profile?.role === 'admin') {
+      router.replace('/admin');
+    }
+  }, [authLoading, profile?.role, router]);
+
   // 로딩 상태
   if (authLoading || dataLoading) {
     return (
@@ -156,6 +166,18 @@ export default function Home() {
         <div className="text-center text-white">
           <div className="w-12 h-12 border-4 border-white/30 border-t-white rounded-full animate-spin mx-auto mb-4" />
           <p>로딩 중...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // 관리자는 리다이렉트 중이므로 로딩 표시
+  if (profile?.role === 'admin') {
+    return (
+      <div className="min-h-dvh flex items-center justify-center bg-gradient-to-br from-green-500 to-emerald-600">
+        <div className="text-center text-white">
+          <div className="w-12 h-12 border-4 border-white/30 border-t-white rounded-full animate-spin mx-auto mb-4" />
+          <p>관리자 페이지로 이동 중...</p>
         </div>
       </div>
     );

@@ -2,9 +2,10 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Circle } from 'lucide-react';
+import { Circle, LogOut } from 'lucide-react';
 import { StatusColor, STATUS_CONFIG, SOSItem } from '@/types/database';
 import { useAdmin } from '@/hooks/useAdmin';
+import { useAuth } from '@/components/AuthProvider';
 
 const StatusIcon = ({ status, size = 16 }: { status: StatusColor; size?: number }) => {
   const config = STATUS_CONFIG[status];
@@ -12,6 +13,7 @@ const StatusIcon = ({ status, size = 16 }: { status: StatusColor; size?: number 
 };
 
 export default function AdminDashboard() {
+  const { signOut } = useAuth();
   const {
     studentStats,
     sosItems,
@@ -97,17 +99,15 @@ export default function AdminDashboard() {
       <header className="bg-white shadow-sm sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Link
-                href="/"
-                className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100"
-              >
-                <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </Link>
-              <h1 className="text-xl font-bold text-gray-800">학원 관리 대시보드</h1>
-            </div>
+            <h1 className="text-xl font-bold text-gray-800">학원 관리 대시보드</h1>
+            <button
+              onClick={signOut}
+              className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+              title="로그아웃"
+            >
+              <LogOut size={18} />
+              <span className="text-sm">로그아웃</span>
+            </button>
           </div>
 
           {/* 탭 네비게이션 */}
