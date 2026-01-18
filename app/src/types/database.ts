@@ -119,13 +119,10 @@ export interface UnitGroup {
   total: number;
 }
 
-// 동적 그리드 계산
+// 4x4 그리드 고정 (25개 초과 시에만 리스트 모드)
 export function getGridSize(itemCount: number): { cols: number; rows: number } | 'list' {
-  if (itemCount <= 4) return { cols: 2, rows: 2 };
-  if (itemCount <= 9) return { cols: 3, rows: 3 };
-  if (itemCount <= 16) return { cols: 4, rows: 4 };
-  if (itemCount <= 25) return { cols: 5, rows: 5 };
-  return 'list';
+  if (itemCount > 25) return 'list';
+  return { cols: 4, rows: 4 };
 }
 
 // 학생 통계 (대시보드용)
