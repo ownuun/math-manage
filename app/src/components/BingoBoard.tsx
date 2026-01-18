@@ -1,10 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Circle } from 'lucide-react';
 import { UnitGroup, StatusColor, CurriculumItem, CurriculumMemo, UserRole, getGridSize, STATUS_CONFIG, ROLE_PERMISSIONS } from '@/types/database';
 import BingoCell from './BingoCell';
 import DetailModal from './DetailModal';
+
+// 4x4 그리드 고정
+const FIXED_GRID_SIZE = 4;
+const TOTAL_CELLS = FIXED_GRID_SIZE * FIXED_GRID_SIZE;
 
 const StatusIcon = ({ status, size = 16 }: { status: StatusColor; size?: number }) => {
   const config = STATUS_CONFIG[status];
@@ -38,9 +42,18 @@ export default function BingoBoard({
   const greenCount = unit.items.filter((item) => progress[item.id] === 'GREEN').length;
   const isAllGreen = greenCount === unit.total;
 
-  // 동적 그리드 크기 계산
+  // 그리드 크기 계산 (25개 초과 시 리스트 모드)
   const gridSize = getGridSize(unit.items.length);
   const isListMode = gridSize === 'list';
+
+  // 빈 셀을 포함한 렌더링 아이템 생성 (4x4 = 16칸 고정)
+  const renderItems: (CurriculumItem | null)[] = useMemo(() => {
+    const items: (CurriculumItem | null)[] = [...unit.items];
+    while (items.length < TOTAL_CELLS) {
+      items.push(null);
+    }
+    return items.slice(0, TOTAL_CELLS);
+  }, [unit.items]);
 
   const handleCellClick = (item: CurriculumItem) => {
     if (permissions.canOpenDetail) {
@@ -99,23 +112,30 @@ export default function BingoBoard({
             ))}
           </div>
         ) : (
-          // 그리드 모드
+          // 그리드 모드 (4x4 고정)
           <div
             className="max-w-full sm:max-w-lg lg:max-w-xl mx-auto gap-1.5 sm:gap-2"
             style={{
               display: 'grid',
-              gridTemplateColumns: `repeat(${gridSize.cols}, 1fr)`,
+              gridTemplateColumns: `repeat(${FIXED_GRID_SIZE}, 1fr)`,
             }}
           >
-            {unit.items.map((item) => (
-              <BingoCell
-                key={item.id}
-                item={item}
-                status={progress[item.id] || 'BLACK'}
-                onClick={() => handleCellClick(item)}
-                disabled={!permissions.canOpenDetail}
-              />
-            ))}
+            {renderItems.map((item, index) =>
+              item ? (
+                <BingoCell
+                  key={item.id}
+                  item={item}
+                  status={progress[item.id] || 'BLACK'}
+                  onClick={() => handleCellClick(item)}
+                  disabled={!permissions.canOpenDetail}
+                />
+              ) : (
+                <div
+                  key={`empty-${index}`}
+                  className="aspect-square rounded-lg sm:rounded-xl bg-gray-200/50 border-2 border-dashed border-gray-300 min-h-[60px] sm:min-h-[70px] lg:min-h-[80px]"
+                />
+              )
+            )}
           </div>
         )}
 

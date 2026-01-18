@@ -428,6 +428,91 @@ export function useAdmin() {
     }
   }, [supabase, curriculumItems]);
 
+  // 커리큘럼 세트 추가
+  const addCurriculumSet = useCallback(async (name: string) => {
+    try {
+      const newSet = {
+        id: `set-${Date.now()}`,
+        name,
+      };
+
+      const { data, error } = await supabase
+        .from('curriculum_sets')
+        .insert(newSet)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setCurriculumSets(prev => [...prev, data].sort((a, b) => a.name.localeCompare(b.name)));
+      return { data, error: null };
+    } catch (err) {
+      console.error('Error adding curriculum set:', err);
+      return { data: null, error: err as Error };
+    }
+  }, [supabase]);
+
+  // 커리큘럼 세트 이름 변경
+  const updateCurriculumSet = useCallback(async (id: string, name: string) => {
+    try {
+      const { error } = await supabase
+        .from('curriculum_sets')
+        .update({ name })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setCurriculumSets(prev =>
+        prev.map(set => set.id === id ? { ...set, name } : set)
+          .sort((a, b) => a.name.localeCompare(b.name))
+      );
+      return { error: null };
+    } catch (err) {
+      console.error('Error updating curriculum set:', err);
+      return { error: err as Error };
+    }
+  }, [supabase]);
+
+  // 커리큘럼 세트 삭제
+  const deleteCurriculumSet = useCallback(async (id: string, deleteItems: boolean = false) => {
+    try {
+      if (deleteItems) {
+        // 하위 항목도 함께 삭제
+        await supabase
+          .from('curriculum_items')
+          .delete()
+          .eq('set_id', id);
+      }
+
+      // 해당 커리큘럼을 사용하는 학생의 curriculum_id를 null로 변경
+      await supabase
+        .from('profiles')
+        .update({ curriculum_id: null })
+        .eq('curriculum_id', id);
+
+      const { error } = await supabase
+        .from('curriculum_sets')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      // 로컬 상태 업데이트
+      setCurriculumSets(prev => prev.filter(set => set.id !== id));
+      if (deleteItems) {
+        setCurriculumItems(prev => prev.filter(item => item.set_id !== id));
+      }
+      setProfiles(prev => prev.map(p =>
+        p.curriculum_id === id ? { ...p, curriculum_id: null } : p
+      ));
+
+      return { error: null };
+    } catch (err) {
+      console.error('Error deleting curriculum set:', err);
+      return { error: err as Error };
+    }
+  }, [supabase]);
+
   useEffect(() => {
     fetchData();
   }, [fetchData]);
@@ -453,5 +538,8 @@ export function useAdmin() {
     addCurriculumItem,
     updateCurriculumItem,
     deleteCurriculumItem,
+    addCurriculumSet,
+    updateCurriculumSet,
+    deleteCurriculumSet,
   };
 }

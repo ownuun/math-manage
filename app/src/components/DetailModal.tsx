@@ -116,7 +116,7 @@ export default function DetailModal({
                 rows={3}
               />
             ) : (
-              <div className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl min-h-[80px]">
+              <div className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl min-h-[80px] whitespace-pre-wrap">
                 {studentMemo || (
                   <span className="text-gray-400 text-sm">학생 메모 없음</span>
                 )}
@@ -142,7 +142,7 @@ export default function DetailModal({
                 rows={3}
               />
             ) : (
-              <div className="w-full p-3 bg-blue-50 border border-blue-200 rounded-xl min-h-[80px]">
+              <div className="w-full p-3 bg-blue-50 border border-blue-200 rounded-xl min-h-[80px] whitespace-pre-wrap">
                 {adminMemo || (
                   <span className="text-gray-400 text-sm">관리자 처방 없음</span>
                 )}
