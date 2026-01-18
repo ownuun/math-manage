@@ -465,12 +465,6 @@ export default function Home() {
                         >
                           {item.name}
                         </span>
-                        <span
-                          className="text-[8px] sm:text-[10px] mt-1 px-1.5 py-0.5 rounded-full bg-white/20"
-                          style={{ color: config.textColor }}
-                        >
-                          {config.label}
-                        </span>
                       </button>
                     );
                   })}
