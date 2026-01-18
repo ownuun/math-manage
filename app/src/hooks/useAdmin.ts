@@ -211,6 +211,125 @@ export function useAdmin() {
     }
   }, [supabase]);
 
+  // 전화번호 업데이트
+  const updatePhone = useCallback(async (userId: string, phone: string | null) => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ phone })
+        .eq('id', userId);
+
+      if (error) throw error;
+
+      // 로컬 상태 업데이트
+      setProfiles(prev => prev.map(p =>
+        p.id === userId ? { ...p, phone } : p
+      ));
+
+      return { error: null };
+    } catch (err) {
+      console.error('Error updating phone:', err);
+      return { error: err as Error };
+    }
+  }, [supabase]);
+
+  // 프로필 정보 업데이트 (이름, 전화번호)
+  const updateProfile = useCallback(async (userId: string, updates: { name?: string; phone?: string | null }) => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update(updates)
+        .eq('id', userId);
+
+      if (error) throw error;
+
+      // 로컬 상태 업데이트
+      setProfiles(prev => prev.map(p =>
+        p.id === userId ? { ...p, ...updates } : p
+      ));
+
+      return { error: null };
+    } catch (err) {
+      console.error('Error updating profile:', err);
+      return { error: err as Error };
+    }
+  }, [supabase]);
+
+  // 사용자 삭제
+  const deleteUser = useCallback(async (userId: string) => {
+    try {
+      // 먼저 관련 데이터 삭제 (curriculum_memos, user_progress)
+      await supabase.from('curriculum_memos').delete().eq('user_id', userId);
+      await supabase.from('user_progress').delete().eq('user_id', userId);
+
+      // 프로필 삭제
+      const { error } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', userId);
+
+      if (error) throw error;
+
+      // 로컬 상태 업데이트
+      setProfiles(prev => prev.filter(p => p.id !== userId));
+
+      return { error: null };
+    } catch (err) {
+      console.error('Error deleting user:', err);
+      return { error: err as Error };
+    }
+  }, [supabase]);
+
+  // 사용자 보관
+  const archiveUser = useCallback(async (userId: string) => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          is_archived: true,
+          archived_at: new Date().toISOString(),
+        })
+        .eq('id', userId);
+
+      if (error) throw error;
+
+      // 로컬 상태 업데이트
+      setProfiles(prev => prev.map(p =>
+        p.id === userId ? { ...p, is_archived: true, archived_at: new Date().toISOString() } : p
+      ));
+
+      return { error: null };
+    } catch (err) {
+      console.error('Error archiving user:', err);
+      return { error: err as Error };
+    }
+  }, [supabase]);
+
+  // 사용자 보관 해제
+  const unarchiveUser = useCallback(async (userId: string) => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          is_archived: false,
+          archived_at: null,
+        })
+        .eq('id', userId);
+
+      if (error) throw error;
+
+      // 로컬 상태 업데이트
+      setProfiles(prev => prev.map(p =>
+        p.id === userId ? { ...p, is_archived: false, archived_at: null } : p
+      ));
+
+      return { error: null };
+    } catch (err) {
+      console.error('Error unarchiving user:', err);
+      return { error: err as Error };
+    }
+  }, [supabase]);
+
   // 처방 작성 (관리자 메모)
   const writePrescription = useCallback(async (
     userId: string,
@@ -325,6 +444,11 @@ export function useAdmin() {
     approveUser,
     assignCurriculum,
     linkParentToStudent,
+    updatePhone,
+    updateProfile,
+    deleteUser,
+    archiveUser,
+    unarchiveUser,
     writePrescription,
     addCurriculumItem,
     updateCurriculumItem,

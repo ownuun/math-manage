@@ -137,8 +137,8 @@ export default function AdminDashboard() {
       <main className="max-w-4xl mx-auto px-4 py-6 space-y-6">
         {/* 전체 현황 카드 */}
         <section>
-          <h2 className="text-lg font-bold text-gray-800 mb-3">전체 현황</h2>
-          <div className="grid grid-cols-4 gap-3">
+          <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-3">전체 현황</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
             {(['GREEN', 'BLUE', 'RED', 'BLACK'] as StatusColor[]).map((status) => {
               const config = STATUS_CONFIG[status];
               const count = totalStats[status.toLowerCase() as keyof typeof totalStats];
@@ -146,13 +146,13 @@ export default function AdminDashboard() {
               return (
                 <div
                   key={status}
-                  className="bg-white rounded-xl p-4 shadow-sm border border-gray-100"
+                  className="bg-white rounded-xl p-3 sm:p-4 shadow-sm border border-gray-100"
                 >
-                  <div className="flex items-center gap-2 mb-2">
-                    <StatusIcon status={status} size={18} />
-                    <span className="text-sm text-gray-600">{config.label}</span>
+                  <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
+                    <StatusIcon status={status} size={16} />
+                    <span className="text-xs sm:text-sm text-gray-600">{config.label}</span>
                   </div>
-                  <span className="text-2xl font-bold text-gray-800">{count}</span>
+                  <span className="text-xl sm:text-2xl font-bold text-gray-800">{count}</span>
                 </div>
               );
             })}
@@ -162,10 +162,54 @@ export default function AdminDashboard() {
         {/* 학생별 진행 현황 */}
         <section>
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-bold text-gray-800">학생별 진행 현황</h2>
-            <span className="text-sm text-gray-500">{studentStats.length}명</span>
+            <h2 className="text-base sm:text-lg font-bold text-gray-800">학생별 진행 현황</h2>
+            <span className="text-xs sm:text-sm text-gray-500">{studentStats.length}명</span>
           </div>
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+
+          {/* 모바일 카드 레이아웃 */}
+          <div className="md:hidden space-y-3">
+            {studentStats.length === 0 ? (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center text-gray-500">
+                등록된 학생이 없습니다.
+              </div>
+            ) : (
+              studentStats.map((student) => (
+                <div key={student.userId} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <p className="font-medium text-gray-800">{student.userName}</p>
+                      <p className="text-xs text-gray-500">{student.curriculumName}</p>
+                    </div>
+                    {student.red > 0 && (
+                      <span className="px-2 py-1 bg-red-100 text-red-600 rounded-full text-xs font-medium">
+                        SOS {student.red}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                    <div className="flex items-center gap-2 flex-1">
+                      <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden max-w-[120px]">
+                        <div
+                          className="h-full bg-green-500 rounded-full"
+                          style={{ width: `${student.progressPercent}%` }}
+                        />
+                      </div>
+                      <span className="text-xs text-gray-600">{student.progressPercent}%</span>
+                    </div>
+                    <Link
+                      href={`/admin/students/${student.userId}`}
+                      className="text-blue-500 hover:text-blue-600 text-sm ml-3"
+                    >
+                      상세
+                    </Link>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* 데스크탑 테이블 레이아웃 */}
+          <div className="hidden md:block bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             {studentStats.length === 0 ? (
               <div className="p-8 text-center text-gray-500">
                 등록된 학생이 없습니다.

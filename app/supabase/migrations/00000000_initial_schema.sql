@@ -1,5 +1,8 @@
--- Math Green Light Database Schema (학원 관리 시스템)
--- Supabase SQL Editor에서 실행하세요
+-- ===================================
+-- Migration: Initial Schema
+-- Date: 2026-01-18
+-- Description: Math Green Light 초기 데이터베이스 스키마
+-- ===================================
 
 -- ===================================
 -- 기존 테이블/뷰/트리거 삭제 (클린 설치)
@@ -7,13 +10,13 @@
 DROP VIEW IF EXISTS student_stats CASCADE;
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 DROP FUNCTION IF EXISTS handle_new_user() CASCADE;
+DROP FUNCTION IF EXISTS is_admin() CASCADE;
+DROP FUNCTION IF EXISTS is_parent_of(UUID) CASCADE;
 DROP TABLE IF EXISTS curriculum_memos CASCADE;
 DROP TABLE IF EXISTS user_progress CASCADE;
 DROP TABLE IF EXISTS curriculum_items CASCADE;
 DROP TABLE IF EXISTS curriculum_sets CASCADE;
 DROP TABLE IF EXISTS profiles CASCADE;
--- 이전 버전 테이블 삭제
-DROP TABLE IF EXISTS curriculum CASCADE;
 
 -- ===================================
 -- 테이블 생성
@@ -25,8 +28,8 @@ CREATE TABLE IF NOT EXISTS profiles (
   email TEXT NOT NULL,
   name TEXT NOT NULL,
   role TEXT DEFAULT 'pending' CHECK (role IN ('pending', 'student', 'parent', 'admin')),
-  curriculum_id TEXT,  -- 학생에게 배정된 커리큘럼
-  linked_student_id UUID REFERENCES profiles(id),  -- 학부모가 연결된 학생
+  curriculum_id TEXT,
+  linked_student_id UUID REFERENCES profiles(id),
   created_at TIMESTAMPTZ DEFAULT NOW(),
   approved_at TIMESTAMPTZ,
   approved_by UUID REFERENCES profiles(id)
@@ -51,7 +54,7 @@ CREATE TABLE IF NOT EXISTS curriculum_items (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- profiles의 curriculum_id FK 추가 (curriculum_sets 생성 후)
+-- profiles의 curriculum_id FK 추가
 ALTER TABLE profiles
   ADD CONSTRAINT fk_curriculum
   FOREIGN KEY (curriculum_id) REFERENCES curriculum_sets(id);
@@ -66,7 +69,7 @@ CREATE TABLE IF NOT EXISTS user_progress (
   UNIQUE(user_id, item_id)
 );
 
--- 5. 메모 (학생 메모 + 관리자 처방) - 리프 노드만
+-- 5. 메모 (학생 메모 + 관리자 처방)
 CREATE TABLE IF NOT EXISTS curriculum_memos (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
@@ -230,11 +233,14 @@ CREATE POLICY "Admins can update all profiles"
   ON profiles FOR UPDATE
   USING (is_admin());
 
+CREATE POLICY "Trigger can insert profiles"
+  ON profiles FOR INSERT
+  WITH CHECK (true);
+
 -- ===================================
 -- 커리큘럼 정책
 -- ===================================
 
--- 커리큘럼 읽기 정책 (인증된 사용자만)
 CREATE POLICY "Authenticated users can read curriculum_sets"
   ON curriculum_sets FOR SELECT
   USING (auth.role() = 'authenticated');
@@ -243,7 +249,6 @@ CREATE POLICY "Authenticated users can read curriculum_items"
   ON curriculum_items FOR SELECT
   USING (auth.role() = 'authenticated');
 
--- 관리자만 커리큘럼 수정
 CREATE POLICY "Admins can manage curriculum_sets"
   ON curriculum_sets FOR ALL
   USING (is_admin());
@@ -316,11 +321,6 @@ CREATE INDEX IF NOT EXISTS idx_curriculum_memos_item ON curriculum_memos(item_id
 -- 트리거: 프로필 자동 생성
 -- ===================================
 
--- profiles INSERT 정책 (트리거에서 사용)
-CREATE POLICY "Trigger can insert profiles"
-  ON profiles FOR INSERT
-  WITH CHECK (true);
-
 CREATE OR REPLACE FUNCTION handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -338,7 +338,6 @@ BEGIN
   ON CONFLICT (id) DO NOTHING;
   RETURN NEW;
 EXCEPTION WHEN OTHERS THEN
-  -- 에러 발생 시에도 유저 생성은 진행
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
