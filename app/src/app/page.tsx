@@ -431,9 +431,15 @@ export default function Home() {
                 </div>
               )}
 
-              {/* 학습 항목 그리드 */}
+              {/* 학습 항목 그리드 - 4x4 고정 */}
               {childLeaves.length > 0 && (
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+                <div
+                  className="max-w-full sm:max-w-lg lg:max-w-xl mx-auto gap-1.5 sm:gap-2"
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(4, 1fr)',
+                  }}
+                >
                   {childLeaves.map((item) => {
                     const status = progress[item.id] || 'BLACK';
                     const config = {
@@ -448,19 +454,19 @@ export default function Home() {
                         key={item.id}
                         onClick={() => handleLeafClick(item)}
                         disabled={!permissions.canOpenDetail}
-                        className={`tap-effect w-full aspect-square rounded-xl sm:rounded-2xl shadow-lg p-3 sm:p-4 flex flex-col justify-center items-center transition-transform hover:scale-[1.02] ${
+                        className={`tap-effect w-full aspect-square rounded-lg sm:rounded-xl shadow-lg p-2 sm:p-3 flex flex-col justify-center items-center transition-transform hover:scale-[1.02] min-h-[60px] sm:min-h-[70px] lg:min-h-[80px] ${
                           !permissions.canOpenDetail ? 'cursor-not-allowed opacity-80' : ''
                         }`}
                         style={{ backgroundColor: config.bgColor }}
                       >
                         <span
-                          className="text-xs sm:text-sm lg:text-base font-bold text-center line-clamp-3"
+                          className="text-[10px] sm:text-xs lg:text-sm font-bold text-center line-clamp-3"
                           style={{ color: config.textColor }}
                         >
                           {item.name}
                         </span>
                         <span
-                          className="text-[10px] sm:text-xs mt-2 px-2 py-0.5 rounded-full bg-white/20"
+                          className="text-[8px] sm:text-[10px] mt-1 px-1.5 py-0.5 rounded-full bg-white/20"
                           style={{ color: config.textColor }}
                         >
                           {config.label}

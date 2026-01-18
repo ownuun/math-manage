@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { ChevronDown, ChevronRight, Folder, FileText, Plus, Pencil, Trash2, LogOut } from 'lucide-react';
-import { CurriculumItem } from '@/types/database';
+import { CurriculumItem, CurriculumSet } from '@/types/database';
 import { useAdmin } from '@/hooks/useAdmin';
 import { useAuth } from '@/components/AuthProvider';
 import { buildTree, TreeNode } from '@/lib/sample-data';
@@ -182,6 +182,155 @@ function DeleteModal({
   );
 }
 
+// 커리큘럼 세트 추가/편집 모달
+function SetModal({
+  isOpen,
+  onClose,
+  onSave,
+  editSet,
+  saving,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (name: string) => void;
+  editSet?: CurriculumSet | null;
+  saving: boolean;
+}) {
+  const [name, setName] = useState('');
+
+  useEffect(() => {
+    if (editSet) {
+      setName(editSet.name);
+    } else {
+      setName('');
+    }
+  }, [editSet, isOpen]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl max-w-md w-full">
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-bold text-gray-800">
+              {editSet ? '커리큘럼 이름 변경' : '새 커리큘럼 추가'}
+            </h3>
+            <button
+              onClick={onClose}
+              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100"
+            >
+              <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">커리큘럼 이름</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="예: 중1 수학"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              autoFocus
+            />
+          </div>
+
+          <div className="flex gap-2 mt-6">
+            <button
+              onClick={onClose}
+              className="flex-1 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-50"
+            >
+              취소
+            </button>
+            <button
+              onClick={() => {
+                if (name.trim()) {
+                  onSave(name.trim());
+                }
+              }}
+              disabled={!name.trim() || saving}
+              className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+            >
+              {saving ? '저장 중...' : editSet ? '저장' : '추가'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// 커리큘럼 세트 삭제 확인 모달
+function SetDeleteModal({
+  isOpen,
+  onClose,
+  onConfirm,
+  setName,
+  itemCount,
+  saving,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: (deleteItems: boolean) => void;
+  setName: string;
+  itemCount: number;
+  saving: boolean;
+}) {
+  const [deleteItems, setDeleteItems] = useState(true);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl max-w-sm w-full p-6">
+        <h3 className="text-lg font-bold text-gray-800 mb-2">커리큘럼 삭제</h3>
+        <p className="text-sm text-gray-600 mb-4">
+          &quot;{setName}&quot; 커리큘럼을 삭제하시겠습니까?
+        </p>
+
+        {itemCount > 0 && (
+          <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <label className="flex items-start gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={deleteItems}
+                onChange={(e) => setDeleteItems(e.target.checked)}
+                className="mt-0.5 w-4 h-4 text-red-500"
+              />
+              <span className="text-sm text-yellow-700">
+                하위 항목 {itemCount}개도 함께 삭제
+              </span>
+            </label>
+          </div>
+        )}
+
+        <p className="text-xs text-gray-500 mb-4">
+          이 커리큘럼을 사용 중인 학생들은 커리큘럼 미배정 상태가 됩니다.
+        </p>
+
+        <div className="flex gap-2">
+          <button
+            onClick={onClose}
+            className="flex-1 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-50"
+          >
+            취소
+          </button>
+          <button
+            onClick={() => onConfirm(deleteItems)}
+            disabled={saving}
+            className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+          >
+            {saving ? '삭제 중...' : '삭제'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // 트리 노드 컴포넌트
 function TreeNodeComponent({
   node,
@@ -310,6 +459,9 @@ export default function CurriculumPage() {
     addCurriculumItem,
     updateCurriculumItem,
     deleteCurriculumItem,
+    addCurriculumSet,
+    updateCurriculumSet,
+    deleteCurriculumSet,
     refetch,
   } = useAdmin();
 
@@ -324,6 +476,12 @@ export default function CurriculumPage() {
   const [addParentDepth, setAddParentDepth] = useState(0);
   const [editNode, setEditNode] = useState<TreeNode | null>(null);
   const [deleteNode, setDeleteNode] = useState<TreeNode | null>(null);
+
+  // 커리큘럼 세트 모달 상태
+  const [isSetModalOpen, setIsSetModalOpen] = useState(false);
+  const [isSetDeleteModalOpen, setIsSetDeleteModalOpen] = useState(false);
+  const [editSet, setEditSet] = useState<CurriculumSet | null>(null);
+  const [deleteSet, setDeleteSet] = useState<CurriculumSet | null>(null);
 
   // 커리큘럼 세트가 로드되면 첫 번째 선택
   useEffect(() => {
@@ -458,6 +616,78 @@ export default function CurriculumPage() {
     setIsDeleteModalOpen(true);
   };
 
+  // 커리큘럼 세트 추가
+  const handleAddSet = () => {
+    setEditSet(null);
+    setIsSetModalOpen(true);
+  };
+
+  // 커리큘럼 세트 편집
+  const handleEditSet = () => {
+    const currentSet = curriculumSets.find(s => s.id === selectedSet);
+    if (currentSet) {
+      setEditSet(currentSet);
+      setIsSetModalOpen(true);
+    }
+  };
+
+  // 커리큘럼 세트 삭제
+  const handleDeleteSet = () => {
+    const currentSet = curriculumSets.find(s => s.id === selectedSet);
+    if (currentSet) {
+      setDeleteSet(currentSet);
+      setIsSetDeleteModalOpen(true);
+    }
+  };
+
+  // 커리큘럼 세트 저장
+  const handleSaveSet = async (name: string) => {
+    setSaving(true);
+    if (editSet) {
+      const { error } = await updateCurriculumSet(editSet.id, name);
+      if (error) {
+        alert('커리큘럼 이름 변경에 실패했습니다.');
+      } else {
+        setIsSetModalOpen(false);
+        setEditSet(null);
+      }
+    } else {
+      const { data, error } = await addCurriculumSet(name);
+      if (error) {
+        alert('커리큘럼 추가에 실패했습니다.');
+      } else {
+        setIsSetModalOpen(false);
+        if (data) {
+          setSelectedSet(data.id);
+        }
+      }
+    }
+    setSaving(false);
+  };
+
+  // 커리큘럼 세트 삭제 확인
+  const handleConfirmDeleteSet = async (deleteItems: boolean) => {
+    if (!deleteSet) return;
+    setSaving(true);
+
+    const { error } = await deleteCurriculumSet(deleteSet.id, deleteItems);
+
+    if (error) {
+      alert('커리큘럼 삭제에 실패했습니다.');
+    } else {
+      setIsSetDeleteModalOpen(false);
+      setDeleteSet(null);
+      // 첫 번째 커리큘럼 선택
+      const remaining = curriculumSets.filter(s => s.id !== deleteSet.id);
+      if (remaining.length > 0) {
+        setSelectedSet(remaining[0].id);
+      } else {
+        setSelectedSet('');
+      }
+    }
+    setSaving(false);
+  };
+
   // 로딩 상태
   if (loading) {
     return (
@@ -543,18 +773,47 @@ export default function CurriculumPage() {
       <main className="max-w-4xl mx-auto px-4 py-6 space-y-4">
         {/* 커리큘럼 선택 및 컨트롤 */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <select
-            value={selectedSet}
-            onChange={(e) => {
-              setSelectedSet(e.target.value);
-              setExpandedNodes(new Set());
-            }}
-            className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-auto"
-          >
-            {curriculumSets.map(set => (
-              <option key={set.id} value={set.id}>{set.name}</option>
-            ))}
-          </select>
+          <div className="flex items-center gap-2">
+            <select
+              value={selectedSet}
+              onChange={(e) => {
+                setSelectedSet(e.target.value);
+                setExpandedNodes(new Set());
+              }}
+              className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1 sm:flex-none"
+            >
+              {curriculumSets.map(set => (
+                <option key={set.id} value={set.id}>{set.name}</option>
+              ))}
+            </select>
+
+            {/* 커리큘럼 세트 관리 버튼들 */}
+            <button
+              onClick={handleAddSet}
+              className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50"
+              title="새 커리큘럼 추가"
+            >
+              <Plus size={16} className="text-green-600" />
+            </button>
+            {selectedSet && (
+              <>
+                <button
+                  onClick={handleEditSet}
+                  className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50"
+                  title="커리큘럼 이름 변경"
+                >
+                  <Pencil size={16} className="text-blue-600" />
+                </button>
+                <button
+                  onClick={handleDeleteSet}
+                  className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50"
+                  title="커리큘럼 삭제"
+                >
+                  <Trash2 size={16} className="text-red-600" />
+                </button>
+              </>
+            )}
+          </div>
 
           <div className="flex flex-wrap gap-2">
             <button
@@ -657,6 +916,31 @@ export default function CurriculumPage() {
         onConfirm={handleDeleteItem}
         itemName={deleteNode?.name || ''}
         hasChildren={(deleteNode?.children?.length || 0) > 0}
+        saving={saving}
+      />
+
+      {/* 커리큘럼 세트 추가/편집 모달 */}
+      <SetModal
+        isOpen={isSetModalOpen}
+        onClose={() => {
+          setIsSetModalOpen(false);
+          setEditSet(null);
+        }}
+        onSave={handleSaveSet}
+        editSet={editSet}
+        saving={saving}
+      />
+
+      {/* 커리큘럼 세트 삭제 확인 모달 */}
+      <SetDeleteModal
+        isOpen={isSetDeleteModalOpen}
+        onClose={() => {
+          setIsSetDeleteModalOpen(false);
+          setDeleteSet(null);
+        }}
+        onConfirm={handleConfirmDeleteSet}
+        setName={deleteSet?.name || ''}
+        itemCount={deleteSet ? curriculumItems.filter(i => i.set_id === deleteSet.id).length : 0}
         saving={saving}
       />
     </div>
