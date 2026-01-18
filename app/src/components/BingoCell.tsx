@@ -1,33 +1,33 @@
 'use client';
 
-import { Curriculum, StatusColor, STATUS_CONFIG } from '@/types/database';
+import { CurriculumItem, StatusColor, STATUS_CONFIG } from '@/types/database';
 
 interface BingoCellProps {
-  item: Curriculum;
+  item: CurriculumItem;
   status: StatusColor;
   onClick: () => void;
+  disabled?: boolean;
 }
 
-export default function BingoCell({ item, status, onClick }: BingoCellProps) {
+export default function BingoCell({ item, status, onClick, disabled }: BingoCellProps) {
   const config = STATUS_CONFIG[status];
-
-  const getBgClass = () => {
-    switch (status) {
-      case 'BLACK': return 'bg-gray-700 text-white';
-      case 'RED': return 'bg-red-100 text-red-600';
-      case 'BLUE': return 'bg-blue-100 text-blue-600';
-      case 'GREEN': return 'bg-green-100 text-green-600';
-    }
-  };
 
   return (
     <button
       onClick={onClick}
-      className={`tap-effect aspect-square rounded-xl flex flex-col items-center justify-center p-2 transition-all hover:scale-105 ${getBgClass()}`}
+      disabled={disabled}
+      className={`
+        aspect-square rounded-xl flex items-center justify-center p-2
+        transition-all
+        ${disabled ? 'cursor-not-allowed opacity-80' : 'hover:scale-105 tap-effect cursor-pointer'}
+      `}
+      style={{
+        backgroundColor: config.bgColor,
+        color: config.textColor,
+      }}
     >
-      <span className="text-2xl mb-1">{config.emoji}</span>
-      <span className="text-xs font-medium text-center line-clamp-2 leading-tight">
-        {item.type_name}
+      <span className="text-xs font-medium text-center line-clamp-3 leading-tight">
+        {item.name}
       </span>
     </button>
   );
