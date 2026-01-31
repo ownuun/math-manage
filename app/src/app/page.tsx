@@ -596,6 +596,26 @@ export default function Home() {
             </>
           )}
 
+          {/* 색상 범례 */}
+          <div className="mt-6 flex justify-center gap-3 sm:gap-4 text-xs text-gray-600">
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded-full bg-gray-600" />
+              <span>미학습</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded-full bg-red-300" />
+              <span>SOS</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded-full bg-blue-300" />
+              <span>연습</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded-full bg-green-300" />
+              <span>마스터</span>
+            </div>
+          </div>
+
           {/* 역할 안내 */}
           {userRole === 'parent' && (
             <div className="mt-4 sm:mt-6 bg-blue-50 border border-blue-200 rounded-xl p-3 sm:p-4 text-xs sm:text-sm text-blue-700">
