@@ -420,7 +420,7 @@ export default function Home() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 p-3 sm:p-4 -mt-3 sm:-mt-4">
+      <main className="flex-1 p-3 sm:p-4 pt-6 sm:pt-8">
         <div className="max-w-4xl mx-auto">
           {/* 브레드크럼 네비게이션 */}
           {folderPath.length > 1 && (
