@@ -64,13 +64,11 @@ export function useAdmin() {
       setCurriculumSets(setsData || []);
       setCurriculumItems(itemsData || []);
 
-      // 학생 통계 계산
+      // 학생 통계 계산 (활성 커리큘럼만 포함)
       const students = (profilesData || []).filter(p => p.role === 'student');
       const leafItems = (itemsData || []).filter(item => item.is_leaf);
 
       const stats: StudentStats[] = students.map(student => {
-        // 학생의 커리큘럼 항목만 필터링
-        const studentLeafItems = leafItems.filter(item => item.set_id === student.curriculum_id);
         const studentProgress = (progressData || []).filter(p => p.user_id === student.id);
 
         const progressMap: Record<string, StatusColor> = {};
@@ -78,18 +76,30 @@ export function useAdmin() {
           progressMap[p.item_id] = p.status as StatusColor;
         });
 
-        const total = studentLeafItems.length;
-        const green = studentLeafItems.filter(item => progressMap[item.id] === 'GREEN').length;
-        const blue = studentLeafItems.filter(item => progressMap[item.id] === 'BLUE').length;
-        const red = studentLeafItems.filter(item => progressMap[item.id] === 'RED').length;
-        const black = total - green - blue - red;
+        // 커리큘럼(set) 단위로 활성화 여부 판단: 하나라도 non-BLACK이면 활성
+        const activeSets = new Set<string>();
+        leafItems.forEach(item => {
+          const status = progressMap[item.id];
+          if (status && status !== 'BLACK') {
+            activeSets.add(item.set_id);
+          }
+        });
 
-        const curriculum = (setsData || []).find(s => s.id === student.curriculum_id);
+        // 활성 커리큘럼에 속한 모든 아이템 포함 (BLACK 포함)
+        const activeItems = leafItems.filter(item => activeSets.has(item.set_id));
+
+        const total = activeItems.length;
+        const green = activeItems.filter(item => progressMap[item.id] === 'GREEN').length;
+        const blue = activeItems.filter(item => progressMap[item.id] === 'BLUE').length;
+        const red = activeItems.filter(item => progressMap[item.id] === 'RED').length;
+        const black = activeItems.filter(item => {
+          const status = progressMap[item.id];
+          return !status || status === 'BLACK';
+        }).length;
 
         return {
           userId: student.id,
           userName: student.name,
-          curriculumName: curriculum?.name || '미배정',
           total,
           green,
           blue,
@@ -389,11 +399,10 @@ export function useAdmin() {
     }
   }, [supabase]);
 
-  // 처방 작성 (관리자 메모)
+  // 처방 작성 (유튜브 URL만)
   const writePrescription = useCallback(async (
     userId: string,
     itemId: string,
-    adminMemo: string,
     youtubeUrl?: string
   ) => {
     try {
@@ -402,7 +411,6 @@ export function useAdmin() {
         .upsert({
           user_id: userId,
           item_id: itemId,
-          admin_memo: adminMemo,
           youtube_url: youtubeUrl || null,
           updated_at: new Date().toISOString(),
         }, {
