@@ -59,9 +59,9 @@ export default function DetailModal({
     onClose();
   };
 
-  // YouTube 영상 ID 추출 (v= 파라미터 위치 무관)
+  // YouTube 영상 ID 추출 (v= 파라미터 위치 무관, live 포함)
   const getYoutubeEmbedUrl = (url: string) => {
-    const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|v\/|shorts\/))([^&?\s]+)/);
+    const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|v\/|shorts\/|live\/))([^&?\s]+)/);
     return match ? `https://www.youtube.com/embed/${match[1]}` : null;
   };
 
