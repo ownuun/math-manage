@@ -73,16 +73,11 @@ export default function StudentsPage() {
     return studentStats.find(s => s.userId === studentId);
   };
 
-  // 승인 처리
   const handleApprove = async () => {
     if (!selectedProfile) return;
     setSaving(true);
 
-    const { error } = await approveUser(
-      selectedProfile.id,
-      selectedRole,
-      selectedRole === 'student' ? selectedCurriculumId : undefined
-    );
+    const { error } = await approveUser(selectedProfile.id, selectedRole);
 
     if (error) {
       alert('승인에 실패했습니다.');
@@ -752,34 +747,16 @@ export default function StudentsPage() {
               <p className="text-sm text-gray-500">{selectedProfile.email}</p>
             </div>
 
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">역할 선택</label>
-                <select
-                  value={selectedRole}
-                  onChange={(e) => setSelectedRole(e.target.value as UserRole)}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="student">학생</option>
-                  <option value="parent">학부모</option>
-                </select>
-              </div>
-
-              {selectedRole === 'student' && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">커리큘럼 배정</label>
-                  <select
-                    value={selectedCurriculumId}
-                    onChange={(e) => setSelectedCurriculumId(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">선택하세요</option>
-                    {curriculumSets.map(set => (
-                      <option key={set.id} value={set.id}>{set.name}</option>
-                    ))}
-                  </select>
-                </div>
-              )}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">역할 선택</label>
+              <select
+                value={selectedRole}
+                onChange={(e) => setSelectedRole(e.target.value as UserRole)}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="student">학생</option>
+                <option value="parent">학부모</option>
+              </select>
             </div>
 
             <div className="flex gap-2 mt-6">
@@ -791,7 +768,7 @@ export default function StudentsPage() {
               </button>
               <button
                 onClick={handleApprove}
-                disabled={saving || (selectedRole === 'student' && !selectedCurriculumId)}
+                disabled={saving}
                 className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
               >
                 {saving ? '처리 중...' : '승인'}
