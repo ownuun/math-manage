@@ -19,9 +19,8 @@ interface FolderPath {
 export default function Home() {
   const router = useRouter();
 
-  // 현재 폴더 ID (null = 최상위)
+  const [selectedSetId, setSelectedSetId] = useState<string | null>(null);
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
-  // 폴더 경로 (브레드크럼용)
   const [folderPath, setFolderPath] = useState<FolderPath[]>([{ id: null, name: '홈' }]);
   // 빙고판 표시 여부
   const [showBingoBoard, setShowBingoBoard] = useState(false);
@@ -36,6 +35,7 @@ export default function Home() {
   const { profile, loading: authLoading, signOut } = useAuth();
   const {
     curriculumItems,
+    curriculumSets,
     progress,
     memos,
     loading: dataLoading,
@@ -43,15 +43,21 @@ export default function Home() {
     updateStatus,
     updateStudentMemo,
     updateAdminMemo,
+    linkedStudents,
+    selectedStudentId,
+    selectStudent,
+    isParent,
   } = useSupabase();
 
   const userRole = profile?.role || 'pending';
   const permissions = ROLE_PERMISSIONS[userRole];
 
-  // 현재 폴더의 직접 자식들 계산
   const currentChildren = useMemo(() => {
-    return curriculumItems.filter(item => item.parent_id === currentFolderId);
-  }, [curriculumItems, currentFolderId]);
+    if (!selectedSetId) return [];
+    return curriculumItems.filter(item => 
+      item.set_id === selectedSetId && item.parent_id === currentFolderId
+    );
+  }, [curriculumItems, currentFolderId, selectedSetId]);
 
   // 현재 폴더의 하위에 있는 폴더들
   const childFolders = useMemo(() => {
@@ -63,20 +69,25 @@ export default function Home() {
     return currentChildren.filter(item => item.is_leaf).sort((a, b) => a.order - b.order);
   }, [currentChildren]);
 
-  // 재귀적으로 모든 하위 leaf 찾기 (폴더 진행률 계산용)
-  const getAllLeafChildren = (parentId: string): CurriculumItem[] => {
-    const directChildren = curriculumItems.filter(item => item.parent_id === parentId);
+  const getAllLeafChildren = (parentId: string, setId?: string): CurriculumItem[] => {
+    const directChildren = curriculumItems.filter(item => 
+      item.parent_id === parentId && (!setId || item.set_id === setId)
+    );
     let allLeaves: CurriculumItem[] = [];
 
     directChildren.forEach(child => {
       if (child.is_leaf) {
         allLeaves.push(child);
       } else {
-        allLeaves = allLeaves.concat(getAllLeafChildren(child.id));
+        allLeaves = allLeaves.concat(getAllLeafChildren(child.id, setId));
       }
     });
 
     return allLeaves;
+  };
+
+  const getSetLeafItems = (setId: string): CurriculumItem[] => {
+    return curriculumItems.filter(item => item.set_id === setId && item.is_leaf);
   };
 
   // 현재 폴더 정보
@@ -84,29 +95,49 @@ export default function Home() {
     ? curriculumItems.find(item => item.id === currentFolderId)
     : null;
 
-  // 폴더 클릭 핸들러
+  const handleSetClick = (setId: string, setName: string) => {
+    setSelectedSetId(setId);
+    setCurrentFolderId(null);
+    setFolderPath([{ id: null, name: '홈' }, { id: setId, name: setName }]);
+    setShowBingoBoard(false);
+  };
+
   const handleFolderClick = (folder: CurriculumItem) => {
     setCurrentFolderId(folder.id);
     setFolderPath(prev => [...prev, { id: folder.id, name: folder.name }]);
     setShowBingoBoard(false);
   };
 
-  // 브레드크럼 클릭 핸들러
   const handleBreadcrumbClick = (index: number) => {
-    const targetPath = folderPath[index];
-    setCurrentFolderId(targetPath.id);
-    setFolderPath(folderPath.slice(0, index + 1));
-    setShowBingoBoard(false);
+    if (index === 0) {
+      setSelectedSetId(null);
+      setCurrentFolderId(null);
+      setFolderPath([{ id: null, name: '홈' }]);
+      setShowBingoBoard(false);
+    } else {
+      const targetPath = folderPath[index];
+      if (index === 1 && selectedSetId) {
+        setCurrentFolderId(null);
+      } else {
+        setCurrentFolderId(targetPath.id);
+      }
+      setFolderPath(folderPath.slice(0, index + 1));
+      setShowBingoBoard(false);
+    }
   };
 
-  // 뒤로가기 핸들러
   const handleBack = () => {
     if (showBingoBoard) {
       setShowBingoBoard(false);
     } else if (folderPath.length > 1) {
       const newPath = folderPath.slice(0, -1);
       setFolderPath(newPath);
-      setCurrentFolderId(newPath[newPath.length - 1].id);
+      if (newPath.length === 1) {
+        setSelectedSetId(null);
+        setCurrentFolderId(null);
+      } else {
+        setCurrentFolderId(newPath[newPath.length - 1].id);
+      }
     }
   };
 
@@ -232,8 +263,8 @@ export default function Home() {
     );
   }
 
-  // 커리큘럼 미배정 상태
-  if (!profile?.curriculum_id && userRole !== 'admin') {
+  // 커리큘럼 미배정 상태 (학생만 해당, 학부모는 연결된 학생을 통해 봄)
+  if (!isParent && !profile?.curriculum_id && userRole !== 'admin') {
     return (
       <div className="min-h-dvh flex items-center justify-center bg-gradient-to-br from-green-500 to-emerald-600 p-4">
         <div className="bg-white rounded-2xl shadow-xl p-6 max-w-md text-center">
@@ -246,6 +277,33 @@ export default function Home() {
           <p className="text-sm text-gray-600 mb-4">
             아직 커리큘럼이 배정되지 않았습니다.<br />
             관리자에게 문의해주세요.
+          </p>
+          <button
+            onClick={signOut}
+            className="px-4 py-2 border border-gray-200 text-gray-600 rounded-lg text-sm hover:bg-gray-50 flex items-center gap-2 mx-auto"
+          >
+            <LogOut size={16} />
+            로그아웃
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // 학부모인데 연결된 학생이 없는 경우
+  if (isParent && linkedStudents.length === 0) {
+    return (
+      <div className="min-h-dvh flex items-center justify-center bg-gradient-to-br from-green-500 to-emerald-600 p-4">
+        <div className="bg-white rounded-2xl shadow-xl p-6 max-w-md text-center">
+          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-bold text-gray-800 mb-2">연결된 학생 없음</h2>
+          <p className="text-sm text-gray-600 mb-4">
+            아직 연결된 학생이 없습니다.<br />
+            관리자에게 학생 연결을 요청해주세요.
           </p>
           <button
             onClick={signOut}
@@ -320,11 +378,29 @@ export default function Home() {
             </div>
           </div>
 
-          {/* 역할 배지 */}
-          <div className="mt-2 sm:mt-3">
+          {/* 역할 배지 + 학부모 학생 선택 */}
+          <div className="mt-2 sm:mt-3 flex items-center gap-2">
             <span className="inline-flex items-center px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium bg-white/20">
               {ROLE_PERMISSIONS[userRole].label}
             </span>
+            {isParent && linkedStudents.length > 1 && (
+              <select
+                value={selectedStudentId || ''}
+                onChange={(e) => selectStudent(e.target.value)}
+                className="px-2 py-1 rounded-lg text-xs bg-white/20 border border-white/30 text-white focus:outline-none focus:ring-2 focus:ring-white/50"
+              >
+                {linkedStudents.map(student => (
+                  <option key={student.id} value={student.id} className="text-gray-800">
+                    {student.name}
+                  </option>
+                ))}
+              </select>
+            )}
+            {isParent && linkedStudents.length === 1 && (
+              <span className="text-xs text-green-100">
+                {linkedStudents[0].name}의 학습 현황
+              </span>
+            )}
           </div>
 
           {/* 진척도 바 */}
@@ -367,12 +443,59 @@ export default function Home() {
             </div>
           )}
 
-          {/* 커리큘럼 표시 */}
-          {currentChildren.length === 0 ? (
+          {/* 커리큘럼 세트 그리드 (최상위) */}
+          {!selectedSetId && (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+              {curriculumSets.map(set => {
+                const setLeaves = getSetLeafItems(set.id);
+                const greenCount = setLeaves.filter(item => progress[item.id] === 'GREEN').length;
+                const total = setLeaves.length;
+                const isComplete = greenCount === total && total > 0;
+
+                return (
+                  <button
+                    key={set.id}
+                    onClick={() => handleSetClick(set.id, set.name)}
+                    className={`tap-effect p-4 sm:p-5 rounded-xl shadow-sm transition-all hover:scale-[1.02] text-left ${
+                      isComplete
+                        ? 'bg-green-50 border-2 border-green-300'
+                        : 'bg-white border border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <Folder size={18} className={isComplete ? 'text-green-500' : 'text-yellow-500'} />
+                      <span className="font-medium text-gray-800 text-sm sm:text-base">{set.name}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className={`text-xs ${isComplete ? 'text-green-600' : 'text-gray-500'}`}>
+                        {greenCount}/{total} 완료
+                      </span>
+                      {total > 0 && (
+                        <div className="w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full ${isComplete ? 'bg-green-500' : 'bg-blue-500'}`}
+                            style={{ width: `${(greenCount / total) * 100}%` }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+              {curriculumSets.length === 0 && (
+                <div className="col-span-full bg-white rounded-xl shadow-sm p-6 text-center text-gray-500">
+                  <p>등록된 커리큘럼이 없습니다.</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* 커리큘럼 항목 표시 */}
+          {selectedSetId && currentChildren.length === 0 ? (
             <div className="bg-white rounded-xl shadow-sm p-6 sm:p-8 text-center text-gray-500">
               <p>커리큘럼 항목이 없습니다.</p>
             </div>
-          ) : (
+          ) : selectedSetId && (
             <>
               {/* 폴더 리스트 - 상단 1행 스크롤 */}
               {childFolders.length > 0 && (

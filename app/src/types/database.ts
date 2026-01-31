@@ -7,6 +7,7 @@ export type UserRole = 'admin' | 'student' | 'parent' | 'pending';
 export interface CurriculumSet {
   id: string;
   name: string;
+  order?: number;
   created_at: string;
 }
 

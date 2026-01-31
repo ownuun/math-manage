@@ -3,7 +3,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
-import { CurriculumItem, CurriculumMemo, StatusColor, UnitGroup, CurriculumSet } from '@/types/database';
+import { CurriculumItem, CurriculumMemo, StatusColor, UnitGroup, CurriculumSet, Profile } from '@/types/database';
+
+interface LinkedStudent {
+  id: string;
+  name: string;
+}
 
 export function useSupabase(targetUserId?: string) {
   const { user, profile } = useAuth();
@@ -14,17 +19,55 @@ export function useSupabase(targetUserId?: string) {
   const [units, setUnits] = useState<UnitGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [linkedStudents, setLinkedStudents] = useState<LinkedStudent[]>([]);
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
 
   const supabase = createClient();
 
-  // 실제 사용할 유저 ID (관리자가 특정 학생 조회 시 targetUserId 사용)
-  const userId = targetUserId || user?.id;
-  // 커리큘럼 ID (프로필에서 가져옴)
-  const curriculumId = profile?.curriculum_id;
+  const isParent = profile?.role === 'parent';
+  const userId = targetUserId || (isParent ? selectedStudentId : user?.id);
 
-  // 커리큘럼 및 진척도 불러오기
+  const fetchLinkedStudents = useCallback(async () => {
+    if (!isParent || !user?.id) return;
+
+    try {
+      const { data: linksData, error: linksError } = await supabase
+        .from('parent_student_links')
+        .select('student_id')
+        .eq('parent_id', user.id);
+
+      if (linksError) throw linksError;
+
+      if (linksData && linksData.length > 0) {
+        const studentIds = linksData.map(l => l.student_id);
+        const { data: studentsData, error: studentsError } = await supabase
+          .from('profiles')
+          .select('id, name')
+          .in('id', studentIds);
+
+        if (studentsError) throw studentsError;
+
+        const students = (studentsData || []).map(s => ({ id: s.id, name: s.name }));
+        setLinkedStudents(students);
+
+        if (students.length > 0 && !selectedStudentId) {
+          const savedId = typeof window !== 'undefined' ? localStorage.getItem('selectedStudentId') : null;
+          const validSavedId = savedId && students.some(s => s.id === savedId);
+          setSelectedStudentId(validSavedId ? savedId : students[0].id);
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching linked students:', err);
+    }
+  }, [supabase, isParent, user?.id, selectedStudentId]);
+
   const fetchData = useCallback(async () => {
-    if (!userId) {
+    if (!user?.id) {
+      setLoading(false);
+      return;
+    }
+
+    if (isParent && !selectedStudentId) {
       setLoading(false);
       return;
     }
@@ -33,27 +76,19 @@ export function useSupabase(targetUserId?: string) {
       setLoading(true);
       setError(null);
 
-      // 커리큘럼 세트 조회
       const { data: setsData, error: setsError } = await supabase
         .from('curriculum_sets')
         .select('*')
-        .order('name');
+        .order('order');
 
       if (setsError) throw setsError;
       setCurriculumSets(setsData || []);
 
-      // 커리큘럼 항목 조회 (유저의 커리큘럼만 또는 전체)
-      let itemsQuery = supabase
+      const { data: itemsData, error: itemsError } = await supabase
         .from('curriculum_items')
         .select('*')
         .order('depth')
         .order('order');
-
-      if (curriculumId) {
-        itemsQuery = itemsQuery.eq('set_id', curriculumId);
-      }
-
-      const { data: itemsData, error: itemsError } = await itemsQuery;
 
       if (itemsError) throw itemsError;
 
@@ -133,7 +168,7 @@ export function useSupabase(targetUserId?: string) {
     } finally {
       setLoading(false);
     }
-  }, [supabase, userId, curriculumId]);
+  }, [supabase, userId, isParent, selectedStudentId, user?.id]);
 
   // 상태 업데이트
   const updateStatus = useCallback(
@@ -268,6 +303,19 @@ export function useSupabase(targetUserId?: string) {
     [supabase, userId, memos]
   );
 
+  const selectStudent = useCallback((studentId: string) => {
+    setSelectedStudentId(studentId);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('selectedStudentId', studentId);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isParent) {
+      fetchLinkedStudents();
+    }
+  }, [isParent, fetchLinkedStudents]);
+
   useEffect(() => {
     fetchData();
   }, [fetchData]);
@@ -284,5 +332,9 @@ export function useSupabase(targetUserId?: string) {
     updateStudentMemo,
     updateAdminMemo,
     refetch: fetchData,
+    linkedStudents,
+    selectedStudentId,
+    selectStudent,
+    isParent,
   };
 }

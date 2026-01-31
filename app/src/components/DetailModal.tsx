@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Circle, PenSquare, MessageCircle, Youtube } from 'lucide-react';
+import { Circle, PenSquare, Youtube } from 'lucide-react';
+import { useModalHistory } from '@/hooks/useModalHistory';
 import { CurriculumItem, CurriculumMemo, StatusColor, UserRole, STATUS_CONFIG, ROLE_PERMISSIONS } from '@/types/database';
 
 const StatusIcon = ({ status, size = 20 }: { status: StatusColor; size?: number }) => {
@@ -31,6 +32,8 @@ export default function DetailModal({
   onClose,
 }: DetailModalProps) {
   const permissions = ROLE_PERMISSIONS[userRole];
+  
+  useModalHistory(true, onClose);
 
   // 로컬 상태
   const [studentMemo, setStudentMemo] = useState(memo?.student_memo || '');
@@ -119,32 +122,6 @@ export default function DetailModal({
               <div className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl min-h-[80px] whitespace-pre-wrap">
                 {studentMemo || (
                   <span className="text-gray-400 text-sm">학생 메모 없음</span>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* 관리자 처방 영역 */}
-          <div>
-            <label className="flex items-center gap-2 text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
-              <MessageCircle size={18} className="text-blue-500" />
-              관리자 처방
-              {userRole === 'student' && (
-                <span className="text-xs text-gray-400">(읽기 전용)</span>
-              )}
-            </label>
-            {permissions.canEditAdminMemo ? (
-              <textarea
-                value={adminMemo}
-                onChange={(e) => setAdminMemo(e.target.value)}
-                placeholder="학생에게 처방할 내용을 적어주세요..."
-                className="w-full p-3 border border-gray-200 rounded-xl resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                rows={3}
-              />
-            ) : (
-              <div className="w-full p-3 bg-blue-50 border border-blue-200 rounded-xl min-h-[80px] whitespace-pre-wrap">
-                {adminMemo || (
-                  <span className="text-gray-400 text-sm">관리자 처방 없음</span>
                 )}
               </div>
             )}
