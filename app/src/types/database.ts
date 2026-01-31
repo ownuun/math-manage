@@ -130,7 +130,6 @@ export function getGridSize(itemCount: number): { cols: number; rows: number } |
 export interface StudentStats {
   userId: string;
   userName: string;
-  curriculumName: string;
   total: number;
   green: number;
   blue: number;

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Circle, Check, UserCheck, Book, Link2, Phone, Pencil, Trash2, Archive, ArchiveRestore, LogOut } from 'lucide-react';
+import { Circle, UserCheck, Link2, Phone, Pencil, Trash2, Archive, ArchiveRestore, LogOut } from 'lucide-react';
 import { StatusColor, STATUS_CONFIG, Profile, ROLE_PERMISSIONS, UserRole } from '@/types/database';
 import { useAdmin } from '@/hooks/useAdmin';
 import { useAuth } from '@/components/AuthProvider';
@@ -16,13 +16,10 @@ export default function StudentsPage() {
   const { signOut } = useAuth();
   const {
     profiles,
-    curriculumSets,
     studentStats,
     loading,
     error,
     approveUser,
-    assignCurriculum,
-    linkParentToStudent,
     linkParentToStudents,
     getParentLinkedStudents,
     updatePhone,
@@ -37,10 +34,8 @@ export default function StudentsPage() {
   const [roleFilter, setRoleFilter] = useState<'all' | 'student' | 'parent' | 'pending'>('all');
   const [showArchived, setShowArchived] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
-  const [modalType, setModalType] = useState<'approve' | 'curriculum' | 'link' | 'phone' | 'edit' | 'delete' | 'archive' | 'unarchive' | null>(null);
+  const [modalType, setModalType] = useState<'approve' | 'link' | 'phone' | 'edit' | 'delete' | 'archive' | 'unarchive' | null>(null);
   const [selectedRole, setSelectedRole] = useState<UserRole>('student');
-  const [selectedCurriculumId, setSelectedCurriculumId] = useState('');
-  const [selectedStudentId, setSelectedStudentId] = useState('');
   const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
   const [phoneInput, setPhoneInput] = useState('');
   const [nameInput, setNameInput] = useState('');
@@ -81,22 +76,6 @@ export default function StudentsPage() {
 
     if (error) {
       alert('승인에 실패했습니다.');
-    } else {
-      closeModal();
-      refetch();
-    }
-    setSaving(false);
-  };
-
-  // 커리큘럼 배정
-  const handleAssignCurriculum = async () => {
-    if (!selectedProfile || !selectedCurriculumId) return;
-    setSaving(true);
-
-    const { error } = await assignCurriculum(selectedProfile.id, selectedCurriculumId);
-
-    if (error) {
-      alert('커리큘럼 배정에 실패했습니다.');
     } else {
       closeModal();
       refetch();
@@ -210,12 +189,10 @@ export default function StudentsPage() {
     setSaving(false);
   };
 
-  const openModal = async (profile: Profile, type: 'approve' | 'curriculum' | 'link' | 'phone' | 'edit' | 'delete' | 'archive' | 'unarchive') => {
+  const openModal = async (profile: Profile, type: 'approve' | 'link' | 'phone' | 'edit' | 'delete' | 'archive' | 'unarchive') => {
     setSelectedProfile(profile);
     setModalType(type);
     setSelectedRole('student');
-    setSelectedCurriculumId(profile.curriculum_id || curriculumSets[0]?.id || '');
-    setSelectedStudentId(profile.linked_student_id || '');
     setPhoneInput(profile.phone || '');
     setNameInput(profile.name || '');
     
@@ -391,7 +368,6 @@ export default function StudentsPage() {
               const isParent = profile.role === 'parent';
               const isPending = profile.role === 'pending';
               const stat = isStudent ? getStudentStat(profile.id) : null;
-              const curriculum = curriculumSets.find(c => c.id === profile.curriculum_id);
               const linkedStudent = isParent ? students.find(s => s.id === profile.linked_student_id) : null;
 
               return (
@@ -452,18 +428,6 @@ export default function StudentsPage() {
                   {/* 학생 정보 */}
                   {isStudent && (
                     <div className="space-y-2 pt-2 border-t border-gray-100">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-500">커리큘럼</span>
-                        <div className="flex items-center gap-1">
-                          <span className="text-gray-700">{curriculum?.name || '미배정'}</span>
-                          <button
-                            onClick={() => openModal(profile, 'curriculum')}
-                            className="text-blue-500 hover:text-blue-600"
-                          >
-                            <Book size={14} />
-                          </button>
-                        </div>
-                      </div>
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-gray-500">전화번호</span>
                         <div className="flex items-center gap-1">
@@ -564,7 +528,7 @@ export default function StudentsPage() {
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">이름</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">전화번호</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">역할</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">커리큘럼</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">연결 학생</th>
                 <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">진행률</th>
                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">액션</th>
               </tr>
@@ -575,7 +539,6 @@ export default function StudentsPage() {
                 const isParent = profile.role === 'parent';
                 const isPending = profile.role === 'pending';
                 const stat = isStudent ? getStudentStat(profile.id) : null;
-                const curriculum = curriculumSets.find(c => c.id === profile.curriculum_id);
                 const linkedStudent = isParent ? students.find(s => s.id === profile.linked_student_id) : null;
 
                 return (
@@ -607,21 +570,9 @@ export default function StudentsPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600">
-                      {isStudent && (
-                        <div className="flex items-center gap-1">
-                          <span>{curriculum?.name || '미배정'}</span>
-                          <button
-                            onClick={() => openModal(profile, 'curriculum')}
-                            className="text-blue-500 hover:text-blue-600"
-                            title="커리큘럼 변경"
-                          >
-                            <Book size={14} />
-                          </button>
-                        </div>
-                      )}
                       {isParent && linkedStudent && (
                         <div className="flex items-center gap-1">
-                          <span>→ {linkedStudent.name}</span>
+                          <span>{linkedStudent.name}</span>
                           <button
                             onClick={() => openModal(profile, 'link')}
                             className="text-blue-500 hover:text-blue-600"
@@ -639,7 +590,7 @@ export default function StudentsPage() {
                           학생 연결
                         </button>
                       )}
-                      {isPending && '-'}
+                      {!isParent && '-'}
                     </td>
                     <td className="px-4 py-3 text-center">
                       {stat && (
@@ -772,48 +723,6 @@ export default function StudentsPage() {
                 className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
               >
                 {saving ? '처리 중...' : '승인'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 커리큘럼 변경 모달 */}
-      {modalType === 'curriculum' && selectedProfile && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6">
-            <h3 className="text-lg font-bold text-gray-800 mb-4">커리큘럼 변경</h3>
-
-            <div className="bg-gray-50 rounded-lg p-3 mb-4">
-              <p className="font-medium text-gray-800">{selectedProfile.name}</p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">커리큘럼 선택</label>
-              <select
-                value={selectedCurriculumId}
-                onChange={(e) => setSelectedCurriculumId(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                {curriculumSets.map(set => (
-                  <option key={set.id} value={set.id}>{set.name}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="flex gap-2 mt-6">
-              <button
-                onClick={closeModal}
-                className="flex-1 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-50"
-              >
-                취소
-              </button>
-              <button
-                onClick={handleAssignCurriculum}
-                disabled={saving || !selectedCurriculumId}
-                className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
-              >
-                {saving ? '처리 중...' : '변경'}
               </button>
             </div>
           </div>

@@ -24,7 +24,6 @@ export default function AdminDashboard() {
   } = useAdmin();
 
   const [selectedSOS, setSelectedSOS] = useState<SOSItem | null>(null);
-  const [prescription, setPrescription] = useState('');
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -41,13 +40,12 @@ export default function AdminDashboard() {
 
   // 처방 저장
   const handleSavePrescription = async () => {
-    if (!selectedSOS || !prescription.trim()) return;
+    if (!selectedSOS || !youtubeUrl.trim()) return;
 
     setSaving(true);
     const { error } = await writePrescription(
       selectedSOS.userId,
       selectedSOS.itemId,
-      prescription,
       youtubeUrl || undefined
     );
 
@@ -55,7 +53,6 @@ export default function AdminDashboard() {
       alert('처방 저장에 실패했습니다.');
     } else {
       setSelectedSOS(null);
-      setPrescription('');
       setYoutubeUrl('');
       refetch();
     }
@@ -178,7 +175,6 @@ export default function AdminDashboard() {
                   <div className="flex items-start justify-between mb-2">
                     <div>
                       <p className="font-medium text-gray-800">{student.userName}</p>
-                      <p className="text-xs text-gray-500">{student.curriculumName}</p>
                     </div>
                     {student.red > 0 && (
                       <span className="px-2 py-1 bg-red-100 text-red-600 rounded-full text-xs font-medium">
@@ -219,7 +215,6 @@ export default function AdminDashboard() {
                 <thead className="bg-gray-50 border-b border-gray-100">
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">이름</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">커리큘럼</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">진행률</th>
                     <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">SOS</th>
                     <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase"></th>
@@ -229,7 +224,6 @@ export default function AdminDashboard() {
                   {studentStats.map((student) => (
                     <tr key={student.userId} className="hover:bg-gray-50">
                       <td className="px-4 py-3 font-medium text-gray-800">{student.userName}</td>
-                      <td className="px-4 py-3 text-sm text-gray-600">{student.curriculumName}</td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden max-w-[100px]">
@@ -291,7 +285,6 @@ export default function AdminDashboard() {
                   <button
                     onClick={() => {
                       setSelectedSOS(item);
-                      setPrescription('');
                       setYoutubeUrl('');
                     }}
                     className="px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-sm rounded-lg transition-colors"
@@ -339,18 +332,7 @@ export default function AdminDashboard() {
               {/* 처방 입력 */}
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">처방 내용</label>
-                  <textarea
-                    value={prescription}
-                    onChange={(e) => setPrescription(e.target.value)}
-                    placeholder="학생에게 전달할 처방을 작성하세요..."
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                    rows={4}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">유튜브 URL (선택)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">참고 영상 URL</label>
                   <input
                     type="url"
                     value={youtubeUrl}
@@ -371,7 +353,7 @@ export default function AdminDashboard() {
                 </button>
                 <button
                   onClick={handleSavePrescription}
-                  disabled={!prescription.trim() || saving}
+                  disabled={!youtubeUrl.trim() || saving}
                   className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
                 >
                   {saving ? '저장 중...' : '저장'}

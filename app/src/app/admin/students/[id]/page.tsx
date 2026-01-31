@@ -43,10 +43,9 @@ export default function StudentDetailPage() {
   const [editCurriculumId, setEditCurriculumId] = useState('');
 
   // 처방 폼 상태
-  const [adminMemo, setAdminMemo] = useState('');
   const [youtubeUrl, setYoutubeUrl] = useState('');
 
-  // 상태별 통계
+  // 상태별 통계 (progressItems는 이미 활성 커리큘럼만 포함)
   const stats = {
     total: progressItems.length,
     green: progressItems.filter(p => p.status === 'GREEN').length,
@@ -86,7 +85,35 @@ export default function StudentDetailPage() {
         setCurriculumSets(setsData);
       }
 
-      // 커리큘럼 조회
+      // 진행 상태 조회
+      const { data: progressData, error: progressError } = await supabase
+        .from('user_progress')
+        .select('*')
+        .eq('user_id', studentId);
+
+      if (progressError) throw progressError;
+
+      // 메모 조회
+      const { data: memosData, error: memosError } = await supabase
+        .from('curriculum_memos')
+        .select('*')
+        .eq('user_id', studentId);
+
+      if (memosError) throw memosError;
+
+      // 진행 상태 맵
+      const progressMap: Record<string, StatusColor> = {};
+      progressData?.forEach(p => {
+        progressMap[p.item_id] = p.status as StatusColor;
+      });
+
+      // 메모 맵
+      const memosMap: Record<string, CurriculumMemo> = {};
+      memosData?.forEach(m => {
+        memosMap[m.item_id] = m;
+      });
+
+      // 커리큘럼 정보 조회 (표시용)
       if (profileData.curriculum_id) {
         const { data: curriculumData, error: curriculumError } = await supabase
           .from('curriculum_sets')
@@ -97,55 +124,38 @@ export default function StudentDetailPage() {
         if (!curriculumError && curriculumData) {
           setCurriculum(curriculumData);
         }
-
-        // 커리큘럼 항목 조회 (leaf만)
-        const { data: itemsData, error: itemsError } = await supabase
-          .from('curriculum_items')
-          .select('*')
-          .eq('set_id', profileData.curriculum_id)
-          .eq('is_leaf', true)
-          .order('depth')
-          .order('order');
-
-        if (itemsError) throw itemsError;
-
-        // 진행 상태 조회
-        const { data: progressData, error: progressError } = await supabase
-          .from('user_progress')
-          .select('*')
-          .eq('user_id', studentId);
-
-        if (progressError) throw progressError;
-
-        // 메모 조회
-        const { data: memosData, error: memosError } = await supabase
-          .from('curriculum_memos')
-          .select('*')
-          .eq('user_id', studentId);
-
-        if (memosError) throw memosError;
-
-        // 진행 상태 맵
-        const progressMap: Record<string, StatusColor> = {};
-        progressData?.forEach(p => {
-          progressMap[p.item_id] = p.status as StatusColor;
-        });
-
-        // 메모 맵
-        const memosMap: Record<string, CurriculumMemo> = {};
-        memosData?.forEach(m => {
-          memosMap[m.item_id] = m;
-        });
-
-        // 진행 항목 생성
-        const items: ProgressItem[] = (itemsData || []).map(item => ({
-          item,
-          status: progressMap[item.id] || 'BLACK',
-          memo: memosMap[item.id] || null,
-        }));
-
-        setProgressItems(items);
       }
+
+      // 모든 커리큘럼 아이템 조회 (useAdmin과 동일한 방식)
+      const { data: allItemsData, error: itemsError } = await supabase
+        .from('curriculum_items')
+        .select('*')
+        .eq('is_leaf', true)
+        .order('depth')
+        .order('order');
+
+      if (itemsError) throw itemsError;
+
+      // 커리큘럼(set) 단위로 활성화 여부 판단 (useAdmin과 동일)
+      const activeSets = new Set<string>();
+      (allItemsData || []).forEach(item => {
+        const status = progressMap[item.id];
+        if (status && status !== 'BLACK') {
+          activeSets.add(item.set_id);
+        }
+      });
+
+      // 활성 커리큘럼에 속한 모든 아이템
+      const activeItems = (allItemsData || []).filter(item => activeSets.has(item.set_id));
+
+      // 진행 항목 생성
+      const items: ProgressItem[] = activeItems.map(item => ({
+        item,
+        status: progressMap[item.id] || 'BLACK',
+        memo: memosMap[item.id] || null,
+      }));
+
+      setProgressItems(items);
     } catch (err) {
       console.error('Error fetching student data:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch data');
@@ -171,7 +181,6 @@ export default function StudentDetailPage() {
   // 처방 모달 열기
   const openPrescriptionModal = (item: ProgressItem) => {
     setSelectedSosItem(item);
-    setAdminMemo(item.memo?.admin_memo || '');
     setYoutubeUrl(item.memo?.youtube_url || '');
     setPrescriptionModalOpen(true);
   };
@@ -214,7 +223,6 @@ export default function StudentDetailPage() {
         .upsert({
           user_id: student.id,
           item_id: selectedSosItem.item.id,
-          admin_memo: adminMemo || null,
           youtube_url: youtubeUrl || null,
           updated_at: new Date().toISOString(),
         }, {
@@ -583,17 +591,7 @@ export default function StudentDetailPage() {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">관리자 처방</label>
-                <textarea
-                  value={adminMemo}
-                  onChange={(e) => setAdminMemo(e.target.value)}
-                  placeholder="학생에게 전달할 처방 내용을 입력하세요"
-                  rows={4}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">참고 영상 URL (선택)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">참고 영상 URL</label>
                 <input
                   type="url"
                   value={youtubeUrl}
