@@ -23,6 +23,8 @@ export default function StudentsPage() {
     approveUser,
     assignCurriculum,
     linkParentToStudent,
+    linkParentToStudents,
+    getParentLinkedStudents,
     updatePhone,
     updateProfile,
     deleteUser,
@@ -39,6 +41,7 @@ export default function StudentsPage() {
   const [selectedRole, setSelectedRole] = useState<UserRole>('student');
   const [selectedCurriculumId, setSelectedCurriculumId] = useState('');
   const [selectedStudentId, setSelectedStudentId] = useState('');
+  const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
   const [phoneInput, setPhoneInput] = useState('');
   const [nameInput, setNameInput] = useState('');
   const [saving, setSaving] = useState(false);
@@ -106,12 +109,11 @@ export default function StudentsPage() {
     setSaving(false);
   };
 
-  // 학부모-학생 연결
   const handleLinkParent = async () => {
-    if (!selectedProfile || !selectedStudentId) return;
+    if (!selectedProfile) return;
     setSaving(true);
 
-    const { error } = await linkParentToStudent(selectedProfile.id, selectedStudentId);
+    const { error } = await linkParentToStudents(selectedProfile.id, selectedStudentIds);
 
     if (error) {
       alert('연결에 실패했습니다.');
@@ -120,6 +122,14 @@ export default function StudentsPage() {
       refetch();
     }
     setSaving(false);
+  };
+
+  const toggleStudentSelection = (studentId: string) => {
+    setSelectedStudentIds(prev => 
+      prev.includes(studentId)
+        ? prev.filter(id => id !== studentId)
+        : [...prev, studentId]
+    );
   };
 
   // 전화번호 업데이트
@@ -205,8 +215,7 @@ export default function StudentsPage() {
     setSaving(false);
   };
 
-  // 모달 열기
-  const openModal = (profile: Profile, type: 'approve' | 'curriculum' | 'link' | 'phone' | 'edit' | 'delete' | 'archive' | 'unarchive') => {
+  const openModal = async (profile: Profile, type: 'approve' | 'curriculum' | 'link' | 'phone' | 'edit' | 'delete' | 'archive' | 'unarchive') => {
     setSelectedProfile(profile);
     setModalType(type);
     setSelectedRole('student');
@@ -214,6 +223,13 @@ export default function StudentsPage() {
     setSelectedStudentId(profile.linked_student_id || '');
     setPhoneInput(profile.phone || '');
     setNameInput(profile.name || '');
+    
+    if (type === 'link') {
+      const { data } = await getParentLinkedStudents(profile.id);
+      setSelectedStudentIds(data || []);
+    } else {
+      setSelectedStudentIds([]);
+    }
   };
 
   // 모달 닫기
@@ -835,20 +851,35 @@ export default function StudentsPage() {
 
             <div className="bg-gray-50 rounded-lg p-3 mb-4">
               <p className="font-medium text-gray-800">{selectedProfile.name} (학부모)</p>
+              <p className="text-sm text-gray-500">
+                {selectedStudentIds.length > 0 
+                  ? `${selectedStudentIds.length}명 선택됨`
+                  : '연결된 학생 없음'}
+              </p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">연결할 학생 선택</label>
-              <select
-                value={selectedStudentId}
-                onChange={(e) => setSelectedStudentId(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">선택하세요</option>
-                {students.map(student => (
-                  <option key={student.id} value={student.id}>{student.name}</option>
-                ))}
-              </select>
+              <label className="block text-sm font-medium text-gray-700 mb-2">연결할 학생 선택</label>
+              <div className="max-h-60 overflow-y-auto border border-gray-200 rounded-lg">
+                {students.length === 0 ? (
+                  <p className="p-3 text-sm text-gray-500">등록된 학생이 없습니다.</p>
+                ) : (
+                  students.map(student => (
+                    <label
+                      key={student.id}
+                      className="flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedStudentIds.includes(student.id)}
+                        onChange={() => toggleStudentSelection(student.id)}
+                        className="w-4 h-4 text-blue-500 rounded"
+                      />
+                      <span className="text-sm text-gray-800">{student.name}</span>
+                    </label>
+                  ))
+                )}
+              </div>
             </div>
 
             <div className="flex gap-2 mt-6">
@@ -860,10 +891,10 @@ export default function StudentsPage() {
               </button>
               <button
                 onClick={handleLinkParent}
-                disabled={saving || !selectedStudentId}
+                disabled={saving}
                 className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
               >
-                {saving ? '처리 중...' : '연결'}
+                {saving ? '처리 중...' : '저장'}
               </button>
             </div>
           </div>

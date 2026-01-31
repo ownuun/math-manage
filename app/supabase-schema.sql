@@ -7,6 +7,7 @@
 DROP VIEW IF EXISTS student_stats CASCADE;
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 DROP FUNCTION IF EXISTS handle_new_user() CASCADE;
+DROP TABLE IF EXISTS parent_student_links CASCADE;
 DROP TABLE IF EXISTS curriculum_memos CASCADE;
 DROP TABLE IF EXISTS user_progress CASCADE;
 DROP TABLE IF EXISTS curriculum_items CASCADE;
@@ -36,6 +37,7 @@ CREATE TABLE IF NOT EXISTS profiles (
 CREATE TABLE IF NOT EXISTS curriculum_sets (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
+  "order" INTEGER DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -76,6 +78,15 @@ CREATE TABLE IF NOT EXISTS curriculum_memos (
   youtube_url TEXT,
   updated_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(user_id, item_id)
+);
+
+-- 6. 학부모-학생 연결 (다중 연결 지원)
+CREATE TABLE IF NOT EXISTS parent_student_links (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  parent_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  student_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(parent_id, student_id)
 );
 
 -- ===================================
@@ -183,6 +194,7 @@ ALTER TABLE curriculum_sets ENABLE ROW LEVEL SECURITY;
 ALTER TABLE curriculum_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_progress ENABLE ROW LEVEL SECURITY;
 ALTER TABLE curriculum_memos ENABLE ROW LEVEL SECURITY;
+ALTER TABLE parent_student_links ENABLE ROW LEVEL SECURITY;
 
 -- ===================================
 -- SECURITY DEFINER 함수 (RLS 무한재귀 방지)
@@ -202,10 +214,9 @@ CREATE OR REPLACE FUNCTION is_parent_of(student_id UUID)
 RETURNS BOOLEAN AS $$
 BEGIN
   RETURN EXISTS (
-    SELECT 1 FROM profiles
-    WHERE id = auth.uid()
-      AND role = 'parent'
-      AND linked_student_id = student_id
+    SELECT 1 FROM parent_student_links
+    WHERE parent_id = auth.uid()
+      AND parent_student_links.student_id = is_parent_of.student_id
   );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -298,6 +309,22 @@ CREATE POLICY "Users can insert own memos"
   WITH CHECK (user_id = auth.uid());
 
 -- ===================================
+-- 학부모-학생 연결 정책
+-- ===================================
+
+CREATE POLICY "Parents can view own links"
+  ON parent_student_links FOR SELECT
+  USING (parent_id = auth.uid());
+
+CREATE POLICY "Admins can view all links"
+  ON parent_student_links FOR SELECT
+  USING (is_admin());
+
+CREATE POLICY "Admins can manage links"
+  ON parent_student_links FOR ALL
+  USING (is_admin());
+
+-- ===================================
 -- 인덱스 생성 (성능 최적화)
 -- ===================================
 
@@ -311,6 +338,9 @@ CREATE INDEX IF NOT EXISTS idx_user_progress_item ON user_progress(item_id);
 CREATE INDEX IF NOT EXISTS idx_user_progress_status ON user_progress(status);
 CREATE INDEX IF NOT EXISTS idx_curriculum_memos_user ON curriculum_memos(user_id);
 CREATE INDEX IF NOT EXISTS idx_curriculum_memos_item ON curriculum_memos(item_id);
+CREATE INDEX IF NOT EXISTS idx_parent_student_links_parent ON parent_student_links(parent_id);
+CREATE INDEX IF NOT EXISTS idx_parent_student_links_student ON parent_student_links(student_id);
+CREATE INDEX IF NOT EXISTS idx_curriculum_sets_order ON curriculum_sets("order");
 
 -- ===================================
 -- 트리거: 프로필 자동 생성

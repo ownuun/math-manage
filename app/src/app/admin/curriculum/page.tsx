@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { ChevronDown, ChevronRight, Folder, FileText, Plus, Pencil, Trash2, LogOut } from 'lucide-react';
+import { ChevronDown, ChevronRight, ChevronUp, Folder, FileText, Plus, Pencil, Trash2, LogOut } from 'lucide-react';
 import { CurriculumItem, CurriculumSet } from '@/types/database';
 import { useAdmin } from '@/hooks/useAdmin';
 import { useAuth } from '@/components/AuthProvider';
@@ -340,6 +340,10 @@ function TreeNodeComponent({
   onAddChild,
   onEdit,
   onDelete,
+  onMoveUp,
+  onMoveDown,
+  isFirst,
+  isLast,
 }: {
   node: TreeNode;
   depth?: number;
@@ -348,6 +352,10 @@ function TreeNodeComponent({
   onAddChild: (parentId: string, parentDepth: number) => void;
   onEdit: (node: TreeNode) => void;
   onDelete: (node: TreeNode) => void;
+  onMoveUp: (node: TreeNode) => void;
+  onMoveDown: (node: TreeNode) => void;
+  isFirst: boolean;
+  isLast: boolean;
 }) {
   const isExpanded = expandedNodes.has(node.id);
   const hasChildren = node.children && node.children.length > 0;
@@ -390,6 +398,28 @@ function TreeNodeComponent({
 
         {/* 액션 버튼 - 모바일에서 항상 보임 */}
         <div className="flex items-center gap-0.5 sm:gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex-shrink-0">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onMoveUp(node);
+            }}
+            disabled={isFirst}
+            className={`w-6 sm:w-7 h-6 sm:h-7 flex items-center justify-center rounded hover:bg-gray-200 ${isFirst ? 'opacity-30 cursor-not-allowed' : ''}`}
+            title="위로 이동"
+          >
+            <ChevronUp size={12} className="sm:w-3.5 sm:h-3.5 text-gray-600" />
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onMoveDown(node);
+            }}
+            disabled={isLast}
+            className={`w-6 sm:w-7 h-6 sm:h-7 flex items-center justify-center rounded hover:bg-gray-200 ${isLast ? 'opacity-30 cursor-not-allowed' : ''}`}
+            title="아래로 이동"
+          >
+            <ChevronDown size={12} className="sm:w-3.5 sm:h-3.5 text-gray-600" />
+          </button>
           {canAddChild && (
             <button
               onClick={(e) => {
@@ -431,7 +461,7 @@ function TreeNodeComponent({
       {/* 자식 노드 */}
       {hasChildren && isExpanded && (
         <div>
-          {node.children!.map((child) => (
+          {node.children!.map((child, index) => (
             <TreeNodeComponent
               key={child.id}
               node={child}
@@ -441,6 +471,10 @@ function TreeNodeComponent({
               onAddChild={onAddChild}
               onEdit={onEdit}
               onDelete={onDelete}
+              onMoveUp={onMoveUp}
+              onMoveDown={onMoveDown}
+              isFirst={index === 0}
+              isLast={index === node.children!.length - 1}
             />
           ))}
         </div>
@@ -462,6 +496,7 @@ export default function CurriculumPage() {
     addCurriculumSet,
     updateCurriculumSet,
     deleteCurriculumSet,
+    moveCurriculumItem,
     refetch,
   } = useAdmin();
 
@@ -859,7 +894,7 @@ export default function CurriculumPage() {
             </div>
           ) : (
             <div className="space-y-1">
-              {tree.map((node) => (
+              {tree.map((node, index) => (
                 <TreeNodeComponent
                   key={node.id}
                   node={node}
@@ -868,6 +903,10 @@ export default function CurriculumPage() {
                   onAddChild={handleAddChild}
                   onEdit={handleEdit}
                   onDelete={handleDelete}
+                  onMoveUp={(n) => moveCurriculumItem(n.id, 'up')}
+                  onMoveDown={(n) => moveCurriculumItem(n.id, 'down')}
+                  isFirst={index === 0}
+                  isLast={index === tree.length - 1}
                 />
               ))}
             </div>

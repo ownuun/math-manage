@@ -189,7 +189,7 @@ export function useAdmin() {
     }
   }, [supabase]);
 
-  // 학부모-학생 연결
+  // 학부모-학생 연결 (레거시 - 단일 연결)
   const linkParentToStudent = useCallback(async (parentId: string, studentId: string) => {
     try {
       const { error } = await supabase
@@ -199,7 +199,6 @@ export function useAdmin() {
 
       if (error) throw error;
 
-      // 로컬 상태 업데이트
       setProfiles(prev => prev.map(p =>
         p.id === parentId ? { ...p, linked_student_id: studentId } : p
       ));
@@ -207,6 +206,66 @@ export function useAdmin() {
       return { error: null };
     } catch (err) {
       console.error('Error linking parent to student:', err);
+      return { error: err as Error };
+    }
+  }, [supabase]);
+
+  const linkParentToStudents = useCallback(async (parentId: string, studentIds: string[]) => {
+    try {
+      await supabase
+        .from('parent_student_links')
+        .delete()
+        .eq('parent_id', parentId);
+
+      if (studentIds.length > 0) {
+        const links = studentIds.map(studentId => ({
+          parent_id: parentId,
+          student_id: studentId,
+        }));
+
+        const { error } = await supabase
+          .from('parent_student_links')
+          .insert(links);
+
+        if (error) throw error;
+      }
+
+      return { error: null };
+    } catch (err) {
+      console.error('Error linking parent to students:', err);
+      return { error: err as Error };
+    }
+  }, [supabase]);
+
+  const getParentLinkedStudents = useCallback(async (parentId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('parent_student_links')
+        .select('student_id')
+        .eq('parent_id', parentId);
+
+      if (error) throw error;
+
+      return { data: data?.map(l => l.student_id) || [], error: null };
+    } catch (err) {
+      console.error('Error getting linked students:', err);
+      return { data: [], error: err as Error };
+    }
+  }, [supabase]);
+
+  const unlinkParentFromStudent = useCallback(async (parentId: string, studentId: string) => {
+    try {
+      const { error } = await supabase
+        .from('parent_student_links')
+        .delete()
+        .eq('parent_id', parentId)
+        .eq('student_id', studentId);
+
+      if (error) throw error;
+
+      return { error: null };
+    } catch (err) {
+      console.error('Error unlinking parent from student:', err);
       return { error: err as Error };
     }
   }, [supabase]);
@@ -513,6 +572,73 @@ export function useAdmin() {
     }
   }, [supabase]);
 
+  const moveCurriculumItem = useCallback(async (id: string, direction: 'up' | 'down') => {
+    try {
+      const item = curriculumItems.find(i => i.id === id);
+      if (!item) return { error: new Error('Item not found') };
+
+      const siblings = curriculumItems
+        .filter(i => i.set_id === item.set_id && i.parent_id === item.parent_id)
+        .sort((a, b) => a.order - b.order);
+
+      const currentIndex = siblings.findIndex(s => s.id === id);
+      const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+
+      if (targetIndex < 0 || targetIndex >= siblings.length) {
+        return { error: null };
+      }
+
+      const targetItem = siblings[targetIndex];
+      const currentOrder = item.order;
+      const targetOrder = targetItem.order;
+
+      await supabase.from('curriculum_items').update({ order: targetOrder }).eq('id', id);
+      await supabase.from('curriculum_items').update({ order: currentOrder }).eq('id', targetItem.id);
+
+      setCurriculumItems(prev => prev.map(i => {
+        if (i.id === id) return { ...i, order: targetOrder };
+        if (i.id === targetItem.id) return { ...i, order: currentOrder };
+        return i;
+      }));
+
+      return { error: null };
+    } catch (err) {
+      console.error('Error moving curriculum item:', err);
+      return { error: err as Error };
+    }
+  }, [supabase, curriculumItems]);
+
+  const moveCurriculumSet = useCallback(async (id: string, direction: 'up' | 'down') => {
+    try {
+      const sortedSets = [...curriculumSets].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+      const currentIndex = sortedSets.findIndex(s => s.id === id);
+      const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+
+      if (targetIndex < 0 || targetIndex >= sortedSets.length) {
+        return { error: null };
+      }
+
+      const currentSet = sortedSets[currentIndex];
+      const targetSet = sortedSets[targetIndex];
+      const currentOrder = currentSet.order ?? currentIndex;
+      const targetOrder = targetSet.order ?? targetIndex;
+
+      await supabase.from('curriculum_sets').update({ order: targetOrder }).eq('id', id);
+      await supabase.from('curriculum_sets').update({ order: currentOrder }).eq('id', targetSet.id);
+
+      setCurriculumSets(prev => prev.map(s => {
+        if (s.id === id) return { ...s, order: targetOrder };
+        if (s.id === targetSet.id) return { ...s, order: currentOrder };
+        return s;
+      }).sort((a, b) => (a.order ?? 0) - (b.order ?? 0)));
+
+      return { error: null };
+    } catch (err) {
+      console.error('Error moving curriculum set:', err);
+      return { error: err as Error };
+    }
+  }, [supabase, curriculumSets]);
+
   useEffect(() => {
     fetchData();
   }, [fetchData]);
@@ -541,5 +667,10 @@ export function useAdmin() {
     addCurriculumSet,
     updateCurriculumSet,
     deleteCurriculumSet,
+    moveCurriculumItem,
+    moveCurriculumSet,
+    linkParentToStudents,
+    getParentLinkedStudents,
+    unlinkParentFromStudent,
   };
 }

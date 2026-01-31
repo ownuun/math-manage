@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Circle } from 'lucide-react';
+import { useModalHistory } from '@/hooks/useModalHistory';
 import { UnitGroup, StatusColor, CurriculumItem, CurriculumMemo, UserRole, getGridSize, STATUS_CONFIG, ROLE_PERMISSIONS } from '@/types/database';
 import BingoCell from './BingoCell';
 import DetailModal from './DetailModal';
@@ -38,6 +39,9 @@ export default function BingoBoard({
 }: BingoBoardProps) {
   const [selectedItem, setSelectedItem] = useState<CurriculumItem | null>(null);
   const permissions = ROLE_PERMISSIONS[userRole];
+  
+  const closeModal = useCallback(() => setSelectedItem(null), []);
+  useModalHistory(selectedItem !== null, closeModal);
 
   const greenCount = unit.items.filter((item) => progress[item.id] === 'GREEN').length;
   const isAllGreen = greenCount === unit.total;
@@ -167,7 +171,7 @@ export default function BingoBoard({
           onStatusChange={(status) => onStatusChange(selectedItem.id, status)}
           onStudentMemoChange={(memo) => onStudentMemoChange(selectedItem.id, memo)}
           onAdminMemoChange={(memo, youtubeUrl) => onAdminMemoChange(selectedItem.id, memo, youtubeUrl)}
-          onClose={() => setSelectedItem(null)}
+          onClose={closeModal}
         />
       )}
     </div>
